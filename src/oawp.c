@@ -46,6 +46,7 @@
 #include <string.h>
 #include <time.h>
 #include <signal.h>
+#include <unistd.h>
 
 /* OAWP created headers */
 #include "fancy-text.h"
@@ -136,6 +137,11 @@ int main(int argc, char *argv[]) {
       case 't':
         snprintf(configTime, sizeof(configTime), "%s", optarg);
         frameTime = atof(configTime);
+        if(frameTime < MIN_FRAME_TIME) {
+          fprintf(stderr, ERR_TEXT_PUTS"Error: Time cannot be less than %lf.\n", MIN_FRAME_TIME);
+          exit(1);
+        }
+        //TODO
         hasArgTime = true;
         break;
 
@@ -173,12 +179,28 @@ int main(int argc, char *argv[]) {
 
       /* config */
       case 'c':
+        if(access(optarg, F_OK) != 0) {
+          fprintf(stderr, ERR_TEXT_PUTS"Error: %s configuration file does not exist.\n", optarg);
+          exit(1);
+        }
+        if(access(optarg, R_OK) != 0) {
+          fprintf(stderr, ERR_TEXT_PUTS"Error: %s configuration file cannot be read. Please check the file permissions.\n", optarg);
+          exit(1);
+        }
         strcpy(confPath, optarg);
         isArgConf = true;
         break;
 
       /* set-static-wallpaper */
       case 'S':
+        if(access(optarg, F_OK) != 0) {
+          fprintf(stderr, ERR_TEXT_PUTS"Error: %s from 'static-wallpaper' does not exists.\n", optarg);
+          exit(1);
+        }
+        if(access(optarg, R_OK) != 0) {
+          fprintf(stderr, ERR_TEXT_PUTS"Error: %s from 'static-wallpaper' cannot be read. Please check the file permissions.\n", optarg);
+          exit(1);
+        }
         imgPath = (char**)malloc(1 * sizeof(char*));
         imgPath[0] = (char*)malloc(PATH_MAX * sizeof(char));
         strcpy(imgPath[0], optarg);
@@ -229,6 +251,14 @@ int main(int argc, char *argv[]) {
     fprintf(stdout, DEBUG_TEXT_PUTS": Enabled debug\n");
 
   if(!hasArgStaticWallpaper && config_lookup_string(&cfg, "static-wallpaper", &cfgStaticWallpaper)){
+    if(access(cfgStaticWallpaper, F_OK) != 0) {
+      fprintf(stderr, ERR_TEXT_PUTS"Error: %s from 'static-wallpaper' does not exists.\n", cfgStaticWallpaper);
+      exit(1);
+    }
+    if(access(cfgStaticWallpaper, R_OK) != 0) {
+      fprintf(stderr, ERR_TEXT_PUTS"Error: %s from 'static-wallpaper' cannot be read. Please check the file permissions.\n", cfgStaticWallpaper);
+      exit(1);
+    }
     imgPath = (char**)malloc(1 * sizeof(char*));
     imgPath[0] = (char*)malloc(PATH_MAX * sizeof(char));
     strcpy(imgPath[0], cfgStaticWallpaper);
@@ -249,6 +279,10 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, ERR_TEXT_PUTS"No 'path' setting in configuration file.\n");
 
   if(!hasArgTime && config_lookup_float(&cfg, "time", &cfgTime) && !usingStaticWallpaper) {
+    if(cfgTime < MIN_FRAME_TIME) {
+      fprintf(stderr, ERR_TEXT_PUTS"Error: Time cannot be less than %lf.\n", MIN_FRAME_TIME);
+      exit(1);
+    }
     frameTime = cfgTime;
     if(_DEBUG)
       fprintf(stdout, DEBUG_TEXT_PUTS": frameTime: %lf\n", frameTime);
@@ -439,6 +473,15 @@ void getImgCount(char str[PATH_MAX]) {
    * counts every image. argORcout is to know if pImgCount should point to
    * the argument img count variable or configuration count variable.       */
   imgCount = 0;
+
+  if(access(str, F_OK) != 0) {
+    fprintf(stderr, ERR_TEXT_PUTS"Error: %s from 'path' does not exists.\n", str);
+    exit(1);
+  }
+  if(access(str, R_OK) != 0) {
+    fprintf(stderr, ERR_TEXT_PUTS"Error: %s from 'path' cannot be read. Please check the file permissions.\n", str);
+    exit(1);
+  }
 
   DIR *d;
   struct dirent *dir;

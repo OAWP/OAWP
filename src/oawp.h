@@ -36,6 +36,11 @@
 # define DEFAULT_FRAME_TIME 0.07
 #endif
 
+/* The minimum wait time between frame changes OAWP can accept */
+#ifndef MIN_FRAME_TIME
+# define MIN_FRAME_TIME 0.001
+#endif
+
 /* The fit option OAWP should use by default */
 #ifndef DEFAULT_FIT_OPTION
 # define DEFAULT_FIT_OPTION "fit"

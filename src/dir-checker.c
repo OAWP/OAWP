@@ -23,6 +23,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <errno.h>
+#include <stdint.h>
 
 /* OAWP created header files */
 #include "fancy-text.h"
