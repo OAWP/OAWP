@@ -30,7 +30,7 @@ For example, instead of adding the path of the wallpaper files in the source cod
 
 ## Dependencies:
 
-* bash
+* sh
 * gcc
 * make (gmake for BSD)
 * imlib2

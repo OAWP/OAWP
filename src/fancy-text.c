@@ -27,7 +27,7 @@ void puts_logo() {
   /* Outputs OAWP ascii logo with lolcat, a tool to
    * color text on terminal with gradient.
    * Not a hard dependency */
-  if(system("[[ $(command -v lolcat) ]]") == 0) {
+  if(system("[ $(command -v lolcat) ]") == 0) {
     if(system("printf \" /\\$\\$   /\\$\\$  /\\$\\$\\$\\$\\$\\$  /\\$\\$      /\\$\\$ /\\$\\$\\$\\$\\$\\$\\$\\n| \\$\\$  / \\$\\$ /\\$\\$__  \\$\\$| \\$\\$  /\\$ | \\$\\$| \\$\\$__  \\$\\$\\n|  \\$\\$/ \\$\\$/| \\$\\$  \\ \\$\\$| \\$\\$ /\\$\\$\\$| \\$\\$| \\$\\$  \\ \\$\\$\\n \\  \\$\\$\\$\\$/ | \\$\\$\\$\\$\\$\\$\\$\\$| \\$\\$/\\$\\$ \\$\\$ \\$\\$| \\$\\$\\$\\$\\$\\$\\$\\n  >\\$\\$  \\$\\$ | \\$\\$__  \\$\\$| \\$\\$\\$\\$_  \\$\\$\\$\\$| \\$\\$____/\\n /\\$\\$/\\  \\$\\$| \\$\\$  | \\$\\$| \\$\\$\\$/ \\  \\$\\$\\$| \\$\\$      \\n| \\$\\$  \\ \\$\\$| \\$\\$  | \\$\\$| \\$\\$/   \\  \\$\\$| \\$\\$      \\n|__/  |__/|__/  |__/|__/     \\__/|__/      \\n\" | lolcat") != 0) {
       fprintf(stderr, "\n"ERR_TEXT_PUTS"Error: Calling `lolcat` with the system() call returned with a non-zero exit code. This error can be ignored.\n");
     }
