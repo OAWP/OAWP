@@ -18,10 +18,10 @@ jobs:
     - name: Test help and version arguments
       run: |
         # Help
-        xawp -h
-        xawp -help
-        xawp --help
+        oawp -h
+        oawp -help
+        oawp --help
         # Version
-        xawp -v
-        xawp -version
-        xawp --version
+        oawp -v
+        oawp -version
+        oawp --version
