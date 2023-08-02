@@ -2,21 +2,19 @@ LDFLAGS = -lX11 -lImlib2 -lconfig -lm
 CC = gcc
 CFLAGS = -O2
 SRC = ./src/*.c
-BIN = xawp
+BIN = oawp
 BUILD_DIR = ./build/
-CONF_DIR = ./.config/xawp/
+CONF_DIR = ./.config/oawp/
 INSTALL_DIR = /usr/bin/
-CONF_FILE = xawp.conf
+CONF_FILE = oawp.conf
 
 $(BIN):
 	mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(SRC) $(LDFLAGS) -o $(BUILD_DIR)$(BIN)
 
-# TODO: refactor this mess
 install:
 	install -t $(INSTALL_DIR) --owner=$(shell stat -c "%U" $(INSTALL_DIR)) --group=$(shell stat -c "%G" $(INSTALL_DIR)) -m 775 $(BUILD_DIR)$(BIN)
 
-# TODO: refactor this mess
 install-config:
 	for f in /home/*/; do \
 		install -d --owner=$$(stat -c "%U" $$f) --group=$$(stat -c "%G" $$f) -m 755 "$$f$(CONF_DIR).." ; \

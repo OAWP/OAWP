@@ -1,20 +1,20 @@
 /*
  * Copyright (C) 2023 TheRealOne78 <bajcsielias78@gmail.com>
  *
- * This file is part of the XAWP project
+ * This file is part of the OAWP project
  *
- * XAWP is free software: you can redistribute it and/or modify
+ * OAWP is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * XAWP is distributed in the hope that it will be useful,
+ * OAWP is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with XAWP. If not, see <http://www.gnu.org/licenses/>.
+ * along with OAWP. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <stdio.h>
@@ -24,12 +24,12 @@
 #include "info.h"
 
 void puts_logo() {
-  /* Outputs XAWP ascii logo with lolcat, a tool to
+  /* Outputs OAWP ascii logo with lolcat, a tool to
    * color text on terminal with gradient.
    * Not a hard dependency */
   if(system("[[ $(command -v lolcat) ]]") == 0) {
     if(system("printf \" /\\$\\$   /\\$\\$  /\\$\\$\\$\\$\\$\\$  /\\$\\$      /\\$\\$ /\\$\\$\\$\\$\\$\\$\\$\\n| \\$\\$  / \\$\\$ /\\$\\$__  \\$\\$| \\$\\$  /\\$ | \\$\\$| \\$\\$__  \\$\\$\\n|  \\$\\$/ \\$\\$/| \\$\\$  \\ \\$\\$| \\$\\$ /\\$\\$\\$| \\$\\$| \\$\\$  \\ \\$\\$\\n \\  \\$\\$\\$\\$/ | \\$\\$\\$\\$\\$\\$\\$\\$| \\$\\$/\\$\\$ \\$\\$ \\$\\$| \\$\\$\\$\\$\\$\\$\\$\\n  >\\$\\$  \\$\\$ | \\$\\$__  \\$\\$| \\$\\$\\$\\$_  \\$\\$\\$\\$| \\$\\$____/\\n /\\$\\$/\\  \\$\\$| \\$\\$  | \\$\\$| \\$\\$\\$/ \\  \\$\\$\\$| \\$\\$      \\n| \\$\\$  \\ \\$\\$| \\$\\$  | \\$\\$| \\$\\$/   \\  \\$\\$| \\$\\$      \\n|__/  |__/|__/  |__/|__/     \\__/|__/      \\n\" | lolcat") != 0) {
-      fprintf(stderr, ERR_TEXT_PUTS"Error: The system() call did not return a non-zero exit code. This error can be ignored.");
+      fprintf(stderr, "\n"ERR_TEXT_PUTS"Error: Calling `lolcat` with the system() call returned with a non-zero exit code. This error can be ignored.\n");
     }
   }
 
@@ -48,7 +48,7 @@ void puts_logo() {
   }
 
   /* After printing the logo, print the title and version as well */
-  printf(KBWHT "X11 Animated Wallpaper Player v%s\n\n" RST, VERSION);
+  printf(KBWHT "Open Animated Wallpaper Player v%s\n\n" RST, VERSION);
 
 
   /* ASCII art:

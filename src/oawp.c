@@ -1,20 +1,20 @@
 /*
  * Copyright (C) 2023 TheRealOne78 <bajcsielias78@gmail.com>
  *
- * This file is part of the XAWP project
+ * This file is part of the OAWP project
  *
- * XAWP is free software: you can redistribute it and/or modify
+ * OAWP is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * XAWP is distributed in the hope that it will be useful,
+ * OAWP is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with XAWP. If not, see <http://www.gnu.org/licenses/>.
+ * along with OAWP. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef _POSIX_C_SOURCE
@@ -47,11 +47,11 @@
 #include <time.h>
 #include <signal.h>
 
-/* XAWP created headers */
+/* OAWP created headers */
 #include "fancy-text.h"
 #include "info.h"
 #include "dir-checker.h"
-#include "xawp.h"
+#include "oawp.h"
 
 /* This path will be concatenated with HOME envar */
 char defaultConfigFilePath[PATH_MAX];
@@ -79,7 +79,7 @@ bool isArgConf = false;                    /* If true, the configuration file fr
 bool hasArgTime = false;                   /* If true, time from user argument will be used */
 bool hasArgDir = false;                    /* If true, the directory will be used from user argument */
 
-bool usingStaticWallpaper = false;         /* If true, XAWP will run only once to set a static wallpaper */
+bool usingStaticWallpaper = false;         /* If true, OAWP will run only once to set a static wallpaper */
 bool hasArgStaticWallpaper = false;        /* If true, it will be used the Static Wallpaper from user argument */
 
 bool hasArgFit = false;                    /* If true, the fit option from user argument will be used - Order 0 */
@@ -95,8 +95,9 @@ int main(int argc, char *argv[]) {
 
   /* == Initialize everything before running anything meaningful == */
 
-  /* Set up a handler for the SIGTERM signal */
+  /* Set up a handler for the SIGTERM and SIGINT signal */
   signal(SIGTERM, term_handler);
+  signal(SIGINT, term_handler);
 
   /* TODO: See the purpose of this string and comment it here */
   char configTime[6];
@@ -111,7 +112,7 @@ int main(int argc, char *argv[]) {
     { "time"                , required_argument, NULL , 't' },
     { "version"             , no_argument      , NULL , 'v' },
     { "debug"               , no_argument      , NULL , 'D' },
-    { "fit"                 , required_argument, NULL , 'f' }, // Not implemented yet - This is a feature that XAWP will fit the photo based on user's requirements
+    { "fit"                 , required_argument, NULL , 'f' }, // Not implemented yet - This is a feature that OAWP will fit the photo based on user's requirements
     { "directory"           , required_argument, NULL , 'd' },
     { "config"              , required_argument, NULL , 'c' },
     { "set-static-wallpaper", required_argument, NULL , 'S' },
@@ -196,7 +197,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  /* print XAWP color logo in ASCII art. */
+  /* print OAWP color logo in ASCII art. */
   puts_logo();
 
   config_t cfg;
@@ -385,15 +386,15 @@ int main(int argc, char *argv[]) {
 
 void help(void) {
   printf(                                                                                 "\n"
-         "XAWP - X11 Animated Wallpaper Player"                                           "\n"
-         "Play animated wallpapers in X11 by passing XAWP a directory containing the"     "\n"
+         "OAWP - Open Animated Wallpaper Player"                                          "\n"
+         "Play animated wallpapers in X11 by passing OAWP a directory containing the"     "\n"
          "pictures frames wanted to be displayed."                                        "\n"
                                                                                           "\n"
-         "Usage: xawp [options]"                                                          "\n"
+         "Usage: oawp [options]"                                                          "\n"
                                                                                           "\n"
          "Options:"                                                                       "\n"
          "-h, --help\t\t\t"              "Output this help list and exit"                 "\n"
-         "-t, --time\t\t\t"              "Set the time XAWP needs to wait between the"    "\n"
+         "-t, --time\t\t\t"              "Set the time OAWP needs to wait between the"    "\n"
          "\t\t\t\t"                      "change of images: --time seconds.milliseconds"  "\n"
                                                                                           "\n"
          "-v, --version\t\t\t"           "Output version information and license and exit""\n"
@@ -402,17 +403,17 @@ void help(void) {
          "\t\t\t\t"                      "--directory "KBWHT"/home/foo/wallgif/"RST       "\n"
                                                                                           "\n"
          "-c, --config\t\t\t"            "Set another configuration file than the default""\n"
-         "\t\t\t\t"                 KBWHT"%s/.config/xawp/xawp.conf"RST" configuration file\n"
+         "\t\t\t\t"                 KBWHT"%s/.config/oawp/oawp.conf"RST" configuration file\n"
                                                                                           "\n"
          "-S, --set-static-wallpaper\t"  "Set a static wallpaper and exit"                "\n"
                                                                                           "\n"
-         "Note that XAWP uses a lot of system resources like RAM and CPU!"                "\n"
+         "Note that OAWP uses a lot of system resources like RAM and CPU!"                "\n"
                                                                                           "\n"
         , getenv("HOME"));
 }
 
 void version(void) {
-  printf("XAWP version %s" /* version number */                                           "\n"
+  printf("OAWP version %s" /* version number */                                           "\n"
                                                                                           "\n"
          "Copyright (C) 2023 TheRealOne78"                                                "\n"
          "License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.""\n"
@@ -424,10 +425,10 @@ void version(void) {
 
 void term_handler(int signum) {
 
-  /* When receiving a SIGTERM, this function will exit gracefully with an
-   * informative quit message to the user. */
+  /* When receiving a SIGTERM or SIGINT, this function will exit gracefully
+   * with an informative quit message to the user. */
 
-  fprintf(stdout, INFO_TEXT_PUTS"Quiting...\n");
+  fprintf(stdout, "\n"INFO_TEXT_PUTS"Quiting...\n");
   fflush(stdout);
 
   exit(EXIT_SUCCESS);
