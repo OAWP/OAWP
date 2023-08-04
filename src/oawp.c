@@ -275,8 +275,10 @@ int main(int argc, char *argv[]) {
     getImgCount(pathConf);
     getImgPath(pathConf, 0); /* getImgPath: 0 == conf; 1 == arg */
   }
-  else
+  else if(! usingStaticWallpaper) {
     fprintf(stderr, ERR_TEXT_PUTS"No 'path' setting in configuration file.\n");
+    exit(1);
+  }
 
   if(!hasArgTime && config_lookup_float(&cfg, "time", &cfgTime) && !usingStaticWallpaper) {
     if(cfgTime < MIN_FRAME_TIME) {
@@ -287,8 +289,8 @@ int main(int argc, char *argv[]) {
     if(_DEBUG)
       fprintf(stdout, DEBUG_TEXT_PUTS": frameTime: %lf\n", frameTime);
   }
-  else
-    fprintf(stderr, ERR_TEXT_PUTS"No 'time' setting in configuration file.\n");
+  else if(! usingStaticWallpaper)
+    fprintf(stderr, WARN_TEXT_PUTS"No 'time' setting in configuration file. Using default '0.07' seconds as time parameter.\n");
 
   if(config_lookup_bool(&cfg, "fit", &cfgFit) && !hasArgFit && !usingStaticWallpaper) {
     hasConfFit = cfgFit;
