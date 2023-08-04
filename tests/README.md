@@ -15,7 +15,7 @@ This directory contains test configurations meant to test OAWP, including the im
 
 All images in the [./test_assets/](./test_assets/) directory are publicly available under the Creative Commons Attribution 4.0 International (CC BY 4.0). You are free to share, modify and commercialize the images as long as you give propper credits directly to this repository.
 
-You can get the entire license document by accessing https://creativecommons.org/licenses/by/5.0/legalcode or sending a letter to 'Creative Commons, PO Box 1866, Mountain View, CA 94042, USA'.
+You can get the entire license document by accessing https://creativecommons.org/licenses/by/4.0/legalcode or sending a letter to 'Creative Commons, PO Box 1866, Mountain View, CA 94042, USA'.
 
 ## ASCII art credits
 
