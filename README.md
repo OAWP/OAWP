@@ -1,8 +1,6 @@
-<!--
 <p align="center">
-  <img src="./icons/logo_gradient_v2.svg" width="50%">
+  <img src="./icons/OAWP_logo_v1.svg" width="75%">
 </p>
--->
 
 # Open Animated Wallpaper Player
 
