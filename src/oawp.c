@@ -206,6 +206,7 @@ int main(int argc, char *argv[]) {
         strcpy(imgPath[0], optarg);
         imgCount++;
         usingStaticWallpaper = true;
+        hasArgStaticWallpaper = true;
         break;
 
       case '?':
