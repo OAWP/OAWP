@@ -5,7 +5,7 @@
    viewBox="0 0 175 175"
    version="1.1"
    id="svg9"
-   sodipodi:docname="OAWP logo sketch.svg"
+   sodipodi:docname="OAWP_logo_v1.svg"
    inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -28,8 +28,8 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="0.97197545"
-     inkscape:cx="201.65118"
-     inkscape:cy="272.12621"
+     inkscape:cx="139.40681"
+     inkscape:cy="354.43282"
      inkscape:window-width="1908"
      inkscape:window-height="1045"
      inkscape:window-x="4"
@@ -62,7 +62,7 @@
        d="m 37.325,-87.288756 h 8.333334 v 31.607443 l 5.892556,5.892557 H 81.432444 L 87.325,-43.8962 v 25.714887 l -5.892556,5.892557 H 51.55089 L 37.325,-26.514646 v -60.77411"
        stroke="#000000"
        stroke-width="0.35 px"
-       style="fill:#72eda3;fill-opacity:1;fill-rule:evenodd;stroke:#ffffff;stroke-width:0.35;stroke-linecap:square;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+       style="fill:#72eda3;fill-opacity:1;fill-rule:evenodd;stroke:#ffffff;stroke-width:0.35;stroke-linecap:square;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0" />
     <title
        id="title6">b'Sketch'</title>
   </g>
