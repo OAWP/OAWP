@@ -337,7 +337,7 @@ int main(int argc, char *argv[]) {
     exit(42);
   }
 
-  const int screen_count = ScreenCount(display);
+  const int screen_count = XScreenCount(display);
   if(_DEBUG)
     fprintf(stdout, DEBUG_TEXT_PUTS": Found %d screens\n", screen_count);
 
