@@ -64,8 +64,8 @@ char defaultConfigFilePath[PATH_MAX];
  * defined macro */
 bool _DEBUG = DEBUG;
 
-char pathConf[PATH_MAX];                   /* path to images directory, from configuration file */
-char pathArg[PATH_MAX];                    /* path to images directory, from user argument (not -c) */
+char pathConf[PATH_MAX];                   /* path to images directory, from configuration file */ //TODO remove this
+char pathArg[PATH_MAX];                    /* path to images directory, from user argument (not -c) */ //TODO remove this
 
 char confPath[PATH_MAX];                   /* path to configuration file */
 
