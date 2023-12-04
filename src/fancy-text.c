@@ -89,7 +89,7 @@ void puts_logo(void) {
   /* Fush the rainbow pipe file and close it unless it's stdout */
   fflush(rainbowPipe);
   if(isToCloseFile)
-    fclose(rainbowPipe);
+    pclose(rainbowPipe);
 
 
   /* ASCII art:
