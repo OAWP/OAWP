@@ -28,8 +28,7 @@
 void puts_logo(void) {
 
   /* File to pipe to the *AWP output */
-  FILE *rainbowPipe;
-  bool isToCloseFile = true;
+  FILE *rainbowPipe = stdout;
 
   #ifndef _WIN32
   /*
@@ -41,6 +40,8 @@ void puts_logo(void) {
    *
    * _Not a hard dependency_
    */
+
+  bool isToCloseFile = true;
 
   if (access("lcat-rs", X_OK) == 0) {
     if(_DEBUG)
@@ -88,8 +89,19 @@ void puts_logo(void) {
 
   /* Fush the rainbow pipe file and close it unless it's stdout */
   fflush(rainbowPipe);
+
+  #ifndef _WIN32
+  /*
+   * This is valid only if a rainbowPipe exists, therefore this should run only
+   * on *nix operating systems as non-*nix OS'es won't have anything else than
+   * stdout (which shouldn't be closed).
+   *
+   * In case of stdout, the following will not RUN;
+   * In case of _WIN32, the following will not COMPILE.
+   */
   if(isToCloseFile)
     pclose(rainbowPipe);
+  #endif /* _WIN32 */
 
 
   /* ASCII art:
