@@ -55,13 +55,9 @@
 #include "oawp.h"
 #include "arg.h"
 
-
-/* If _DEBUG is true, print debug info.
- * Note that _DEBUG is a variable that may be changed in runtime and DEBUG is a
- * defined macro */
-bool _DEBUG = DEBUG;
-
 /* == DEFAULT PARAMETERS == */
+
+bool _DEBUG = DEBUG;
 
 /* This path will be concatenated with HOME envar */
 char defaultConfigFilePath[PATH_MAX];

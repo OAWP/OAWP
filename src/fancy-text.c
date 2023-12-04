@@ -19,36 +19,79 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "fancy-text.h"
 #include "info.h"
+#include "oawp.h"
 
 void puts_logo(void) {
-  /* Outputs OAWP ascii logo with lolcat, a tool to
-   * color text on terminal with gradient.
-   * Not a hard dependency */
-  if(system("[ $(command -v lolcat) ]") == 0) {
-    if(system("printf \" /\\$\\$   /\\$\\$  /\\$\\$\\$\\$\\$\\$  /\\$\\$      /\\$\\$ /\\$\\$\\$\\$\\$\\$\\$\\n| \\$\\$  / \\$\\$ /\\$\\$__  \\$\\$| \\$\\$  /\\$ | \\$\\$| \\$\\$__  \\$\\$\\n|  \\$\\$/ \\$\\$/| \\$\\$  \\ \\$\\$| \\$\\$ /\\$\\$\\$| \\$\\$| \\$\\$  \\ \\$\\$\\n \\  \\$\\$\\$\\$/ | \\$\\$\\$\\$\\$\\$\\$\\$| \\$\\$/\\$\\$ \\$\\$ \\$\\$| \\$\\$\\$\\$\\$\\$\\$\\n  >\\$\\$  \\$\\$ | \\$\\$__  \\$\\$| \\$\\$\\$\\$_  \\$\\$\\$\\$| \\$\\$____/\\n /\\$\\$/\\  \\$\\$| \\$\\$  | \\$\\$| \\$\\$\\$/ \\  \\$\\$\\$| \\$\\$      \\n| \\$\\$  \\ \\$\\$| \\$\\$  | \\$\\$| \\$\\$/   \\  \\$\\$| \\$\\$      \\n|__/  |__/|__/  |__/|__/     \\__/|__/      \\n\" | lolcat") != 0) {
-      fprintf(stderr, "\n"ERR_TEXT_PUTS"Error: Calling `lolcat` with the system() call returned with a non-zero exit code. This error can be ignored.\n");
-    }
+
+  FILE *rainbowPipe;
+  bool isToCloseFile = true;
+
+  #ifndef _WIN32
+
+  /*
+   * Outputs *AWP ascii logo with a rainbow text manipulator, a tool to color
+   * text on terminal with gradient.
+   *
+   * This can be run only on *nix operating systems, thus the ifndef _WIN32
+   * macro.
+   *
+   * _Not a hard dependency_
+   */
+
+  /* File to pipe to the *AWP output */
+
+  if (access("lcat-rs", X_OK) == 0) {
+    if(_DEBUG)
+      fprintf(stdout, DEBUG_TEXT_PUTS": `lcat-rs' found in the system, opting for it to print *AWP logo");
+
+    rainbowPipe = popen("lcat-rs", "w");
+    /* lcat-rs by `davidkna' - <https://github.com/davidkna/lcat-rs> */
   }
+  else if (access("roflcat", X_OK) == 0) {
+    if(_DEBUG)
+      fprintf(stdout, DEBUG_TEXT_PUTS": `roflcat' found in the system, opting for it to print *AWP logo");
+
+    rainbowPipe = popen("roflcat", "w");
+    /* roflcat by `jameslzhu' - <https://github.com/jameslzhu/roflcat> */
+  }
+  else if (access("lolcat", X_OK) == 0) {
+    if(_DEBUG)
+      fprintf(stdout, DEBUG_TEXT_PUTS": `lolcat' found in the system, opting for it to print *AWP logo");
+
+    rainbowPipe = popen("lolcat", "w");
+    /* lolcat by `busyloop' - <https://github.com/busyloop/lolcat> */
+  }
+  else {
+    if(_DEBUG)
+      fprintf(stdout, DEBUG_TEXT_PUTS": No rainbow text manipulator found in the system, printing raw *AWP logo");
+    rainbowPipe = stdout;
+    isToCloseFile = false;
+  }
+  #endif /* _WIN32 */
 
   /* Outputs XAWP ascii logo without gradient */
-  else {
-    printf("\n" /* print logo */
-      KYEL" /$$   /$$"  KRED"  /$$$$$$ "  KMAG" /$$      /$$"  KBCYN" /$$$$$$$ "  RST"\n"
-      KYEL"| $$  / $$"  KRED" /$$__  $$"  KMAG"| $$  /$ | $$"  KBCYN"| $$__  $$"  RST"\n"
-      KYEL"|  $$/ $$/"  KRED"| $$  \\ $$"  KMAG"| $$ /$$$| $$"  KBCYN"| $$  \\ $$"  RST"\n"
-      KYEL" \\  $$$$/ "  KRED"| $$$$$$$$"  KMAG"| $$/$$ $$ $$"  KBCYN"| $$$$$$$/"  RST"\n"
-      KYEL"  >$$  $$ "  KRED"| $$__  $$"  KMAG"| $$$$_  $$$$"  KBCYN"| $$____/ "  RST"\n"
-      KYEL" /$$/\\  $$"  KRED"| $$  | $$"  KMAG"| $$$/ \\  $$$"  KBCYN"| $$      "  RST"\n"
-      KYEL"| $$  \\ $$"  KRED"| $$  | $$"  KMAG"| $$/   \\  $$"  KBCYN"| $$      "  RST"\n"
-      KYEL"|__/  |__/"  KRED"|__/  |__/"  KMAG"|__/     \\__/"  KBCYN"|__/      "  RST"\n"
-    );
-  }
+  fprintf(rainbowPipe, "\n" /* print logo */
+    KYEL" /$$   /$$"  KRED"  /$$$$$$ "  KMAG" /$$      /$$"  KBCYN" /$$$$$$$ "  RST"\n"
+    KYEL"| $$  / $$"  KRED" /$$__  $$"  KMAG"| $$  /$ | $$"  KBCYN"| $$__  $$"  RST"\n"
+    KYEL"|  $$/ $$/"  KRED"| $$  \\ $$"  KMAG"| $$ /$$$| $$"  KBCYN"| $$  \\ $$"  RST"\n"
+    KYEL" \\  $$$$/ "  KRED"| $$$$$$$$"  KMAG"| $$/$$ $$ $$"  KBCYN"| $$$$$$$/"  RST"\n"
+    KYEL"  >$$  $$ "  KRED"| $$__  $$"  KMAG"| $$$$_  $$$$"  KBCYN"| $$____/ "  RST"\n"
+    KYEL" /$$/\\  $$"  KRED"| $$  | $$"  KMAG"| $$$/ \\  $$$"  KBCYN"| $$      "  RST"\n"
+    KYEL"| $$  \\ $$"  KRED"| $$  | $$"  KMAG"| $$/   \\  $$"  KBCYN"| $$      "  RST"\n"
+    KYEL"|__/  |__/"  KRED"|__/  |__/"  KMAG"|__/     \\__/"  KBCYN"|__/      "  RST"\n"
+  );
 
   /* After printing the logo, print the title and version as well */
   printf(KBWHT "Open Animated Wallpaper Player v%s\n\n" RST, VERSION);
+
+  /* Fush the rainbow pipe file and close it unless it's stdout */
+  fflush(rainbowPipe);
+  if(isToCloseFile)
+    fclose(rainbowPipe);
 
 
   /* ASCII art:

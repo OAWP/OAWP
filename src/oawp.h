@@ -19,7 +19,6 @@
 #ifndef __OAWP_H__
 # define __OAWP_H__
 
-
 #ifdef DEBUG
 /* If DEBUG was defined somewhere else as false, redefine here */
 # if DEBUG == false
@@ -50,6 +49,13 @@
 #ifndef DEFAULT_CONFIG_FILE_PATH
 # define DEFAULT_CONFIG_FILE_PATH "~/.config/oawp/oawp.conf"
 #endif
+
+#include <stdbool.h>
+
+/* If _DEBUG is true, print debug info.
+ * Note that _DEBUG is a variable that may be changed in runtime and DEBUG is a
+ * defined macro */
+extern bool _DEBUG;
 
 typedef struct {
   Window root;
