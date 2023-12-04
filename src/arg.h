@@ -24,16 +24,22 @@
 #include <stdint.h>
 
 typedef struct params {
-    char imDirPath[PATH_MAX]; /* path to images directory */
-    char confPath[PATH_MAX];  /* path to configuration file to use */
-    double frameTime;         /* Time between frames */
-    uint8_t fitOpt;           /* The final fit option */ //TODO: Create an enum for each fit option, instead of chars (oawp.h)
+    /*** VALUES ***/
+    char imDirPath[PATH_MAX];       /* Path to images directory */
+    char confPath[PATH_MAX];        /* Path to configuration file to use */
+    double frameTime;               /* Time between frames */
+    char staticWallpaper[PATH_MAX]; /* Path to static wallpaper */
+    uint8_t fitOpt;                 /* The final fit option */ //TODO: Create an enum for each fit option, instead of chars (oawp.h)
 
-    bool hasConf;             /* If true, the configuration file from argument will be used */
-    bool hasTime;             /* If true, this type has a time value */
-    bool hasDir;              /* If true, this type has a directory value */
-    bool hasStaticWallpaper;  /* If true, this type has a StaticWallpaper value */
-    bool hasFit;              /* If true, this type has a Fit option value */
+    /*** BOOLEANS of value existence ***/
+    bool hasImDirPath;              /* If true, this type has a directory value */
+    bool hasConfPath;               /* If true, the configuration file from argument will be used */
+    bool hasFrameTime;              /* If true, this type has a time value */
+    bool hasStaticWallpaper;        /* If true, this type has a StaticWallpaper value */
+    bool hasFitOpt;                 /* If true, this type has a Fit option value */
 } params_t;
+
+
+uint8_t argGetOpt(int *argc, char ***argv, params_t *parameters);
 
 #endif // __ARG_H__

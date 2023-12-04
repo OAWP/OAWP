@@ -62,6 +62,13 @@
 #define WARN_TEXT_PUTS_CAST(text)  WARN_TEXT_PUTS text
 #define ERR_TEXT_PUTS_CAST(text)   ERR_TEXT_PUTS text
 
-void puts_logo();
+/* Print the *AWP logo */
+void puts_logo(void);
+
+/* Print the help menu */
+void help(void);
+
+/* Print the version of this */
+void version(void);
 
 #endif

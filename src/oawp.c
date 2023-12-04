@@ -38,7 +38,7 @@
 
 /* Basic programming */
 #include <ctype.h>
-#include <getopt.h>
+//#include <getopt.h> //TODO: remove this line of code after moving getopt to arg.h
 #include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -53,44 +53,51 @@
 #include "info.h"
 #include "dir-checker.h"
 #include "oawp.h"
+#include "arg.h"
 
-/* This path will be concatenated with HOME envar */
-char defaultConfigFilePath[PATH_MAX];
-
-/* Basic config/argument variables */
 
 /* If _DEBUG is true, print debug info.
  * Note that _DEBUG is a variable that may be changed in runtime and DEBUG is a
  * defined macro */
 bool _DEBUG = DEBUG;
 
-char pathConf[PATH_MAX];                   /* path to images directory, from configuration file */ //TODO remove this
-char pathArg[PATH_MAX];                    /* path to images directory, from user argument (not -c) */ //TODO remove this
+/* == DEFAULT PARAMETERS == */
 
-char confPath[PATH_MAX];                   /* path to configuration file */
+/* This path will be concatenated with HOME envar */
+char defaultConfigFilePath[PATH_MAX];
 
+/* Basic config/argument variables */
+//char pathConf[PATH_MAX];                   /* path to images directory, from configuration file */ //TODO remove this
+//char pathArg[PATH_MAX];                    /* path to images directory, from user argument (not -c) */ //TODO remove this
+
+char *confPath;          /* path to configuration file */
 unsigned imgCount;                         /* number of images */
-
-char **imgPath;                            /* pointers to paths of images, from configuration file */
-
+char **imgPath;                            /* pointers to paths of images, from configuration file */ //TODO: replace with linked list
 double frameTime = DEFAULT_FRAME_TIME;     /* time between frames */ /* The time set is the default one */
 
-bool isArgConf = false;                    /* If true, the configuration file from argument will be used */
+/*
+ * TODO
+ * The following commented variables will be replaced by the new params_t type.
+ * The commented variables are deprecated and will be removed as soon as
+ * everything was fully implemented
+ */
 
-bool hasArgTime = false;                   /* If true, time from user argument will be used */
-bool hasArgDir = false;                    /* If true, the directory will be used from user argument */
+//bool isArgConf = false;                    /* If true, the configuration file from argument will be used */ //replaced with params.hasConf
 
-bool usingStaticWallpaper = false;         /* If true, OAWP will run only once to set a static wallpaper */
-bool hasArgStaticWallpaper = false;        /* If true, it will be used the Static Wallpaper from user argument */
+//bool hasArgTime = false;                   /* If true, time from user argument will be used */
+//bool hasArgDir = false;                    /* If true, the directory will be used from user argument */
 
-bool hasArgFit = false;                    /* If true, the fit option from user argument will be used - Order 0 */
-bool hasConfFit = false;                   /* If true, the fit option from configuration file will be used - Order 1 */
-char defaultFitOpt[] = DEFAULT_FIT_OPTION; /* Default Fit Option - Order 2 */
-char *fitOpt;                              /* The final fit option */
+//bool usingStaticWallpaper = false;         /* If true, OAWP will run only once to set a static wallpaper */
+//bool hasArgStaticWallpaper = false;        /* If true, it will be used the Static Wallpaper from user argument */
+
+//bool hasArgFit = false;                    /* If true, the fit option from user argument will be used - Order 0 */
+//bool hasConfFit = false;                   /* If true, the fit option from configuration file will be used - Order 1 */
+//char defaultFitOpt[] = DEFAULT_FIT_OPTION; /* Default Fit Option - Order 2 */ //TODO: use enums
+//char *fitOpt;                              /* The final fit option */
 
 /* Miscellaneous variables */
-bool hasCurrentDir = false;                /* If true, the directory containing images has a current directory file: ./ */
-bool hasParentDir = false;                 /* If true, the directory containing images has a parent directory file: ../ */
+bool hasCurrentDir = false;       /* If true, the directory containing images has a current directory file: ./ */
+bool hasParentDir = false;        /* If true, the directory containing images has a parent directory file: ../ */
 
 int main(int argc, char *argv[]) {
 
@@ -107,128 +114,20 @@ int main(int argc, char *argv[]) {
   /* Format the path from relative to absolute */
   formatPath(DEFAULT_CONFIG_FILE_PATH, defaultConfigFilePath);
 
-  /* Struct argument options */
-  static struct option long_options [] = {
-    { "help"                , no_argument      , NULL , 'h' },
-    { "time"                , required_argument, NULL , 't' },
-    { "version"             , no_argument      , NULL , 'v' },
-    { "debug"               , no_argument      , NULL , 'D' },
-    { "fit"                 , required_argument, NULL , 'f' }, // Not implemented yet - This is a feature that OAWP will fit the photo based on user's requirements
-    { "directory"           , required_argument, NULL , 'd' },
-    { "config"              , required_argument, NULL , 'c' },
-    { "set-static-wallpaper", required_argument, NULL , 'S' },
-    { NULL                  , 0                , NULL , 0   }
-  };
-  /* And check for arguments */
-  while(1) {
-    int c = getopt_long(argc, argv, "ht:vDf:d:c:S:", long_options, NULL);
-    /* Detect the end of the options. */
-    if (c == -1)
-      break;
-
-    switch(c) {
-      /* help */
-      case 'h':
-        help();
-        exit(0);
-        break;
-
-      /* time */
-      case 't':
-        snprintf(configTime, sizeof(configTime), "%s", optarg);
-        frameTime = atof(configTime);
-        if(frameTime < MIN_FRAME_TIME) {
-          fprintf(stderr, ERR_TEXT_PUTS"Error: Time cannot be less than %lf.\n", MIN_FRAME_TIME);
-          exit(1);
-        }
-        //TODO
-        hasArgTime = true;
-        break;
-
-      /* version */
-      case 'v':
-        version();
-        exit(0);
-        break;
-
-      /* debug */
-      case 'D':
-        if(!_DEBUG)
-          _DEBUG = true;
-        if(_DEBUG)
-          fprintf(stdout, DEBUG_TEXT_PUTS": Enabled debug\n");
-        break;
-
-      /* fit */
-      case 'f':
-        printf("Fit is not implemented yet, skipping...\n");
-        /* TODO: implement this fit and remove this break */
-        break;
-        /* part of Fit */
-        strcpy(fitOpt, optarg);
-        hasArgFit = true;
-        break;
-
-      /* directory */
-      case 'd':
-        strcpy(pathArg, optarg);
-        getImgCount(pathArg);
-        getImgPath (pathArg, 1);
-        hasArgDir = true;
-        break;
-
-      /* config */
-      case 'c':
-        if(access(optarg, F_OK) != 0) {
-          fprintf(stderr, ERR_TEXT_PUTS"Error: %s configuration file does not exist.\n", optarg);
-          exit(1);
-        }
-        if(access(optarg, R_OK) != 0) {
-          fprintf(stderr, ERR_TEXT_PUTS"Error: %s configuration file cannot be read. Please check the file permissions.\n", optarg);
-          exit(1);
-        }
-        strcpy(confPath, optarg);
-        isArgConf = true;
-        break;
-
-      /* set-static-wallpaper */
-      case 'S':
-        if(access(optarg, F_OK) != 0) {
-          fprintf(stderr, ERR_TEXT_PUTS"Error: %s from 'static-wallpaper' does not exists.\n", optarg);
-          exit(1);
-        }
-        if(access(optarg, R_OK) != 0) {
-          fprintf(stderr, ERR_TEXT_PUTS"Error: %s from 'static-wallpaper' cannot be read. Please check the file permissions.\n", optarg);
-          exit(1);
-        }
-        imgPath = (char**)malloc(1 * sizeof(char*));
-        imgPath[0] = (char*)malloc(PATH_MAX * sizeof(char));
-        strcpy(imgPath[0], optarg);
-        imgCount++;
-        usingStaticWallpaper = true;
-        hasArgStaticWallpaper = true;
-        break;
-
-      case '?':
-        /* No need to print and error message because
-           getopt_long did that already. */
-        exit(EXIT_FAILURE);
-        break;
-
-      default:
-        abort();
-    }
-  }
+  /*
+   * TODO
+   * argGetOpt() // arg.h
+   */
 
   /* print OAWP color logo in ASCII art. */
   puts_logo();
 
   config_t cfg;
-  const char *cfgStaticWallpaper;
-  const char *cfgPath;
-  double cfgTime;
-  int cfgDebug;
-  int cfgFit;
+  //const char *cfgStaticWallpaper;
+  //const char *cfgPath;
+  //double cfgTime;
+  //int cfgDebug;
+  //int cfgFit;
   config_init(&cfg);
   if(!isArgConf)
     strcpy(confPath, defaultConfigFilePath);
@@ -421,44 +320,6 @@ int main(int argc, char *argv[]) {
   }
 }
 
-void help(void) {
-  printf(                                                                                 "\n"
-         "OAWP - Open Animated Wallpaper Player"                                          "\n"
-         "Play animated wallpapers in X11 by passing OAWP a directory containing the"     "\n"
-         "pictures frames wanted to be displayed."                                        "\n"
-                                                                                          "\n"
-         "Usage: oawp [options]"                                                          "\n"
-                                                                                          "\n"
-         "Options:"                                                                       "\n"
-         "-h, --help\t\t\t"              "Output this help list and exit"                 "\n"
-         "-t, --time\t\t\t"              "Set the time OAWP needs to wait between the"    "\n"
-         "\t\t\t\t"                      "change of images: --time seconds.milliseconds"  "\n"
-                                                                                          "\n"
-         "-v, --version\t\t\t"           "Output version information and license and exit""\n"
-         "-D, --debug\t\t\t"             "Output the debug log"                           "\n"
-         "-d, --directory\t\t\t"         "Set directory containing animation frames:"     "\n"
-         "\t\t\t\t"                      "--directory "KBWHT"/home/foo/wallgif/"RST       "\n"
-                                                                                          "\n"
-         "-c, --config\t\t\t"            "Set another configuration file than the default""\n"
-         "\t\t\t\t"                 KBWHT"%s/.config/oawp/oawp.conf"RST" configuration file\n"
-                                                                                          "\n"
-         "-S, --set-static-wallpaper\t"  "Set a static wallpaper and exit"                "\n"
-                                                                                          "\n"
-         "Note that OAWP uses a lot of system resources like RAM and CPU!"                "\n"
-                                                                                          "\n"
-        , getenv("HOME"));
-}
-
-void version(void) {
-  printf("OAWP version %s" /* version number */                                           "\n"
-                                                                                          "\n"
-         "Copyright (C) 2023 TheRealOne78"                                                "\n"
-         "License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.""\n"
-         "This is free software: you are free to change and redistribute it."             "\n"
-         "There is NO WARRANTY, to the extent permitted by law."                          "\n"
-                                                                                          "\n"
-        , VERSION);
-}
 
 void term_handler(int signum) {
 
@@ -686,6 +547,7 @@ void ImFit(Imlib_Image *image[]) {
   int fitOptLimit = 6;
   //int imWidth   = Imlib_get_image_width(*sampleImg);
   //int imHeight  = Imlib_get_image_height(*sampleImg);
+void ImFit(Imlib_Image *image[]) {
 
   for(int temp = 0; temp < strlen(fitOpt); temp++) /* Uppercase every char of fitOpt */
     fitOpt[temp] = toupper(fitOpt[temp]);
