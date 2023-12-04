@@ -27,11 +27,11 @@
 
 void puts_logo(void) {
 
+  /* File to pipe to the *AWP output */
   FILE *rainbowPipe;
   bool isToCloseFile = true;
 
   #ifndef _WIN32
-
   /*
    * Outputs *AWP ascii logo with a rainbow text manipulator, a tool to color
    * text on terminal with gradient.
@@ -41,8 +41,6 @@ void puts_logo(void) {
    *
    * _Not a hard dependency_
    */
-
-  /* File to pipe to the *AWP output */
 
   if (access("lcat-rs", X_OK) == 0) {
     if(_DEBUG)
