@@ -20,8 +20,13 @@
 #ifndef __FANCY_TEXT_H__
 #define __FANCY_TEXT_H__
 
-# ifndef _COLORS_
-  #define _COLORS_
+# ifndef _OAWP_ENABLE_COLORS_
+  #define _OAWP_ENABLE_COLORS_ 1
+  /*
+   * --enable-colors
+   *
+   * When enabled, color sequences will be used
+   */
 
   /* FOREGROUND */
   #define RST "\x1B[0m"
@@ -50,7 +55,7 @@
   #define BOLD  "\x1B[1m"  //bold
   #define UNDL  "\x1B[4m"  //underline
 
-# endif  /* _COLORS_ */
+# endif  /* _OAWP_ENABLE_COLORS_ */
 
 /* colored status macros */
 #define DEBUG_TEXT_PUTS  KBLU "DEBUG" RST

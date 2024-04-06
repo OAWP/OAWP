@@ -17,10 +17,6 @@
  * along with OAWP. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _POSIX_C_SOURCE
-# define _POSIX_C_SOURCE 199309L
-#endif
-
 #ifndef DEBUG
 # define DEBUG false
 #endif
@@ -38,7 +34,6 @@
 
 /* Basic programming */
 #include <ctype.h>
-//#include <getopt.h> //TODO: remove this line of code after moving getopt to arg.h
 #include <math.h>
 #include <stdbool.h>
 #include <stdio.h>

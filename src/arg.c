@@ -148,3 +148,18 @@ uint8_t argGetOpt(int *argc, char ***argv, params_t *parameters) {
 
     return 0; /* EXIT-VALUE: Everything OK */
 }
+
+static int compare_fun (const void *p, const void *q) {
+  /* compare_fun() and some code from getImgPath() from
+   * https://www.linuxquestions.org/questions/programming-9/how-to-list-and-sort-files-in-some-directory-by-the-names-on-linux-win-in-c-4175555160/
+   * by NevemTeve - Thank you NevemTeve
+   * This function is mandatory for qsort to be able to know
+   * what approach to use to sort the images              */
+
+  const char *l = *(const char**)p;
+  const char *r = *(const char**)q;
+  int cmp;
+
+  cmp = strcmp(l, r);
+  return cmp;
+}

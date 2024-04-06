@@ -19,6 +19,10 @@
 #ifndef __OAWP_H__
 # define __OAWP_H__
 
+#ifndef _POSIX_C_SOURCE
+# define _POSIX_C_SOURCE 199309L
+#endif
+
 #ifdef DEBUG
 /* If DEBUG was defined somewhere else as false, redefine here */
 # if DEBUG == false
@@ -51,6 +55,8 @@
 #endif
 
 #include <stdbool.h>
+#include <limits.h>
+#include <Imlib2.h>
 
 /* If _DEBUG is true, print debug info.
  * Note that _DEBUG is a variable that may be changed in runtime and DEBUG is a
