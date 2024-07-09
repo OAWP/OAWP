@@ -21,42 +21,50 @@
 #                                                                      #
 ########################################################################
 
-# DEPRECATED
+# Colors
+RED="\033[31m"
+GREEN="\033[32m"
+YELLOW="\033[33m"
+BLUE="\033[34m"
+MAGENTA="\033[35m"
+CYAN="\033[36m"
+WHITE="\033[37m"
 
-LDFLAGS = -lX11 -lImlib2 -lconfig -lm
-CC = gcc
-CFLAGS = -O2
-SRC = ./src/*.c
-BIN = oawp
-BUILD_DIR = ./build/
-CONF_DIR = ./.config/oawp/
-INSTALL_DIR = /usr/bin/
-CONF_FILE = oawp.conf
+# Formatting
+BOLD="\033[1m"
+UNDERLINE="\033[4m"
 
-$(BIN):
-	mkdir -p $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(SRC) $(LDFLAGS) -o $(BUILD_DIR)$(BIN)
+# Misc
+ENDCOLOR="\033[0m" # Reset color and formatting
 
-install:
-	install -t $(INSTALL_DIR) --owner=$(shell stat -c "%U" $(INSTALL_DIR)) --group=$(shell stat -c "%G" $(INSTALL_DIR)) -m 775 $(BUILD_DIR)$(BIN)
+# Sequences [colored]
+INFO="[${BLUE}I${ENDCOLOR}]"
+WARN="[${YELLOW}W${ENDCOLOR}]"
+ERR="[${RED}E${ENDCOLOR}]"
 
-install-config:
-	for f in /home/*/; do \
-		install -d --owner=$$(stat -c "%U" $$f) --group=$$(stat -c "%G" $$f) -m 755 "$$f$(CONF_DIR).." ; \
-		install -d --owner=$$(stat -c "%U" $$f) --group=$$(stat -c "%G" $$f) -m 755 "$$f$(CONF_DIR)" ; \
-		install -t "$$f$(CONF_DIR)" --owner=$$(stat -c "%U" $$f) --group=$$(stat -c "%G" $$f) -m 755 "$(CONF_DIR)$(CONF_FILE)" ; \
-	done
+: "${LOG_FILE:="./logfile.log"}"
 
-all: $(BIN) install install-config
+uncolor_sequence() {
+    sed -E 's/\\\033\[[0-9;]*m//g'
+}
 
-uninstall:
-	rm -f $(INSTALL_DIR)$(BIN)
+log_info() {
+    message="$1"
+    timestamp="$(date +'%Y-%m-%d %H:%M:%S')"
+    printf "%s %s: %s\n" "${INFO}" "${timestamp}" "${message}"
+    printf "%s %s: %s\n" "${INFO}" "${timestamp}" "${message}" | uncolor_sequence >> "${LOG_FILE}"
+}
 
-clean:
-	rm -rf $(BUILD_DIR)
+log_warn() {
+    message="$1"
+    timestamp="$(date +'%Y-%m-%d %H:%M:%S')"
+    printf "%s %s: %s\n" "${WARN}" "${timestamp}" "${message}"
+    printf "%s %s: %s\n" "${WARN}" "${timestamp}" "${message}" | uncolor_sequence >> "${LOG_FILE}"
+}
 
-TESTDIR = test/
-test: $(BIN)
-	$(BUILD_DIR)$(BIN)
-
-.PHONY: all install uninstall clean
+log_err() {
+    message="$1"
+    timestamp="$(date +'%Y-%m-%d %H:%M:%S')"
+    printf "%s %s: %s\n" "${ERR}" "${timestamp}" "${message}" >&2
+    printf "%s %s: %s\n" "${ERR}" "${timestamp}" "${message}" | uncolor_sequence >> "${LOG_FILE}"
+}

@@ -1,62 +1,50 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
-RED="\e[31m"
-GREEN="\e[32m"
-YELLOW="\e[33m"
-BLUE="\e[34m"
-ENDCOLOR="\e[0m"
+## Copyright_notice ####################################################
+#                                                                      #
+# SPDX-License-Identifier: GPL-3.0-or-later                            #
+#                                                                      #
+# Copyright (C) 2023-2024 TheRealOne78 <bajcsielias78@gmail.com>       #
+#                                                                      #
+# This file is part of the OAWP project                                #
+#                                                                      #
+# OAWP is free software: you can redistribute it and/or modify         #
+# it under the terms of the GNU General Public License as published by #
+# the Free Software Foundation, either version 3 of the License, or    #
+# (at your option) any later version.                                  #
+#                                                                      #
+# OAWP is distributed in the hope that it will be useful,              #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of       #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        #
+# GNU General Public License for more details.                         #
+#                                                                      #
+# You should have received a copy of the GNU General Public License    #
+# along with OAWP.  If not, see <http://www.gnu.org/licenses/>.        #
+#                                                                      #
+########################################################################
 
-INFO="["$BLUE"i"$ENDCOLOR"]"
-WARN="["$YELLOW"w"$ENDCOLOR"]"
-ERR="["$RED"e"$ENDCOLOR"]"
-
-# Check for root
-if [ "$EUID" -ne 0 ]; then
-  printf "$ERR Please run this script with super user permission!\n"
-  exit $EUID
-fi
+# SOURCE
+. ./sh/logging.sh
+. ./sh/cmake.sh
+. ./sh/chkroot.sh # Check for ROOT id
 
 # Install Dependencies
-bash ./configure.sh
-EXIT_CODE=$?
-if [ $EXIT_CODE -ne 0 ]; then
-  exit $EXIT_CODE;
+sh ./sh/prepare.sh
+EXIT_CODE=${?}
+if [ ${EXIT_CODE} -ne 0 ]; then
+    exit ${EXIT_CODE};
 fi
 
-# Compile
-bash ./compile.sh
-EXIT_CODE=$?
-if [ $EXIT_CODE -ne 0 ]; then
-  exit $EXIT_CODE
-fi
+# Configure a CMake project
+cmake_init
 
-# Install
-## BSD family
-if [ -x "$(command -v pkg)" ] || [ -x "$(command -v pkg_add)" ] || [ -x "$(command -v pkgin)" ]; then
-  gmake install
-## Linux
-else
-  make install
-fi
-EXIT_CODE=$?
-if [ $EXIT_CODE -ne 0 ]; then
-  printf "$ERR Couldn't install! Please check if XAWP compiled successfully\n"
-  exit $EXIT_CODE
-fi
+# Build the project
+cmake_build
 
-# Clean
-## BSD family
-if [ -x "$(command -v pkg)" ] || [ -x "$(command -v pkg_add)" ] || [ -x "$(command -v pkgin)" ]; then
-  gmake clean
-## Linux
-else
-  make clean
-fi
-EXIT_CODE=$?
-if [ $EXIT_CODE -ne 0 ]; then
-  printf "$ERR Couldn't clean up!\n"
-  exit $EXIT_CODE
-fi
+# Install the project in the system
+cmake_install
 
-# Done
-printf "$INFO Done. Have a nice day!\n"
+## Clean the project
+#cmake_clean
+
+log_info "Done. Have a nice day!"

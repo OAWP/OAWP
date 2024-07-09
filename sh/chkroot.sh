@@ -21,42 +21,11 @@
 #                                                                      #
 ########################################################################
 
-# DEPRECATED
+# SOURCE
+. ./logging.sh
 
-LDFLAGS = -lX11 -lImlib2 -lconfig -lm
-CC = gcc
-CFLAGS = -O2
-SRC = ./src/*.c
-BIN = oawp
-BUILD_DIR = ./build/
-CONF_DIR = ./.config/oawp/
-INSTALL_DIR = /usr/bin/
-CONF_FILE = oawp.conf
-
-$(BIN):
-	mkdir -p $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(SRC) $(LDFLAGS) -o $(BUILD_DIR)$(BIN)
-
-install:
-	install -t $(INSTALL_DIR) --owner=$(shell stat -c "%U" $(INSTALL_DIR)) --group=$(shell stat -c "%G" $(INSTALL_DIR)) -m 775 $(BUILD_DIR)$(BIN)
-
-install-config:
-	for f in /home/*/; do \
-		install -d --owner=$$(stat -c "%U" $$f) --group=$$(stat -c "%G" $$f) -m 755 "$$f$(CONF_DIR).." ; \
-		install -d --owner=$$(stat -c "%U" $$f) --group=$$(stat -c "%G" $$f) -m 755 "$$f$(CONF_DIR)" ; \
-		install -t "$$f$(CONF_DIR)" --owner=$$(stat -c "%U" $$f) --group=$$(stat -c "%G" $$f) -m 755 "$(CONF_DIR)$(CONF_FILE)" ; \
-	done
-
-all: $(BIN) install install-config
-
-uninstall:
-	rm -f $(INSTALL_DIR)$(BIN)
-
-clean:
-	rm -rf $(BUILD_DIR)
-
-TESTDIR = test/
-test: $(BIN)
-	$(BUILD_DIR)$(BIN)
-
-.PHONY: all install uninstall clean
+# Check for ro
+if [ "$(id -u)" -ne 0 ]; then
+    log_err "Please run this script with super user permission!"
+    exit 1
+fi
