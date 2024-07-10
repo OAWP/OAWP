@@ -55,7 +55,7 @@ check_deps() {
     BSD_DEPENDENCIES="$BSD_DEPENDENCIES gmake"
   fi
 
-  if [ ! -f "/usr/include/Imlib2.h" ]; then
+  if [ ! -x "$(pkg-config imlib2)" ] || [ ! -f "/usr/include/Imlib2.h" ]; then
     log_info "${GREEN}imlib2${ENDCOLOR} not detected, adding it in the dependencies install queue"
     DEPENDENCIES="$DEPENDENCIES imlib2"
     DEB_DEPENDENCIES="$DEB_DEPENDENCIES libimlib2-dev"
@@ -63,7 +63,7 @@ check_deps() {
     BSD_DEPENDENCIES="$BSD_DEPENDENCIES imlib2"
   fi
 
-  if [ ! -d "/usr/include/X11" ]; then
+  if [ ! -x "$(pkg-config x11)" ] || [ ! -d "/usr/include/X11" ]; then
     log_info "${GREEN}libx11${ENDCOLOR} not detected, adding it in the dependencies install queue"
     DEPENDENCIES="$DEPENDENCIES libx11"
     DEB_DEPENDENCIES="$DEB_DEPENDENCIES libx11-dev"
@@ -71,7 +71,7 @@ check_deps() {
     BSD_DEPENDENCIES="$BSD_DEPENDENCIES libx11"
   fi
  
-  if [ ! -f "/usr/include/libconfig.h" ]; then
+  if [ ! -x "$(pkg-config libconfig)" ] || [ ! -f "/usr/include/libconfig.h" ]; then
   log_info "${GREEN}libconfig${ENDCOLOR} not detected, adding it in the dependencies install queue"
   DEPENDENCIES="$DEPENDENCIES libconfig"
   DEB_DEPENDENCIES="$DEB_DEPENDENCIES libconfig-dev"
