@@ -21,42 +21,34 @@
 #                                                                      #
 ########################################################################
 
-# DEPRECATED
+# Set the output directory for libraries
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY
+  "${CMAKE_BINARY_DIR}/libs")
 
-LDFLAGS = -lX11 -lImlib2 -lconfig -lm
-CC = gcc
-CFLAGS = -O2
-SRC = ./src/*.c
-BIN = oawp
-BUILD_DIR = ./build/
-CONF_DIR = ./.config/oawp/
-INSTALL_DIR = /usr/bin/
-CONF_FILE = oawp.conf
+# Set main executable source files
+set("${PROJECT_NAME}_SRC"
+  arg.c
+  dir-checker.c
+  fancy-text.c
+  fit.c
+  oawp.c
+)
 
-$(BIN):
-	mkdir -p $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(SRC) $(LDFLAGS) -o $(BUILD_DIR)$(BIN)
+add_executable(${PROJECT_NAME}
+  "${${PROJECT_NAME}_SRC}")
 
-install:
-	install -t $(INSTALL_DIR) --owner=$(shell stat -c "%U" $(INSTALL_DIR)) --group=$(shell stat -c "%G" $(INSTALL_DIR)) -m 775 $(BUILD_DIR)$(BIN)
+set(include_dirs
+  "${PROJECT_SOURCE_DIR}/include"
+  "${PROJECT_BINARY_DIR}/include"
+)
 
-install-config:
-	for f in /home/*/; do \
-		install -d --owner=$$(stat -c "%U" $$f) --group=$$(stat -c "%G" $$f) -m 755 "$$f$(CONF_DIR).." ; \
-		install -d --owner=$$(stat -c "%U" $$f) --group=$$(stat -c "%G" $$f) -m 755 "$$f$(CONF_DIR)" ; \
-		install -t "$$f$(CONF_DIR)" --owner=$$(stat -c "%U" $$f) --group=$$(stat -c "%G" $$f) -m 755 "$(CONF_DIR)$(CONF_FILE)" ; \
-	done
+#foreach(target
+#  "${PROJECT_NAME}"
+#  "${PROJECT_NAME}_<EXAMPLE>"
+#)
+#  target_include_directories(${target} PRIVATE ${include_dirs})
+#endforeach()
 
-all: $(BIN) install install-config
-
-uninstall:
-	rm -f $(INSTALL_DIR)$(BIN)
-
-clean:
-	rm -rf $(BUILD_DIR)
-
-TESTDIR = test/
-test: $(BIN)
-	$(BUILD_DIR)$(BIN)
-
-.PHONY: all install uninstall clean
+# Set the output directory for executables
+set(EXECUTABLE_OUTPUT_PATH
+  "${CMAKE_BINARY_DIR}/build")
