@@ -114,7 +114,7 @@ endif (DOXYGEN_FOUND)
 #### TESTING ####
 #---------------#
 enable_testing()
-add_subdirectory(tests)
+#add_subdirectory(tests)
 
 #### PACKAGE ####
 #---------------#

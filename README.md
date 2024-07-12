@@ -29,12 +29,13 @@ For example, instead of adding the path of the wallpaper files in the source cod
 ## Dependencies:
 
 * sh
-* gcc
-* make (gmake for BSD)
-* imlib2
-* libx11
+* CMake
+* GCC
+* Make (GMake for BSD)
+* Imlib2
+* libX11
 * libconfig
-* lolcat (optional)
+* lcat-rs/roflcat/lolcat (Optional)
 
 ## TODO:
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 TheRealOne78 <bajcsielias78@gmail.com>
+ * Copyright (C) 2023-2024 TheRealOne78 <bajcsielias78@gmail.com>
  *
  * This file is part of the OAWP project
  *
@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
    */
 
   /* print OAWP color logo in ASCII art. */
-  puts_logo();
+  puts_logo(logo_oawp);
 
   config_t cfg;
   //const char *cfgStaticWallpaper;

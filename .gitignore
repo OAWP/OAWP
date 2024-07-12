@@ -2,3 +2,6 @@ build/
 *.o
 packaging/
 XAWP.wiki/
+Makefile
+/.cache/clangd
+/Testing/

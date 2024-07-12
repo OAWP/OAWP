@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 TheRealOne78 <bajcsielias78@gmail.com>
+ * Copyright (C) 2023-2024 TheRealOne78 <bajcsielias78@gmail.com>
  *
  * This file is part of the OAWP project
  *
@@ -20,6 +20,8 @@
 #ifndef __FANCY_TEXT_H__
 #define __FANCY_TEXT_H__
 
+#include <stdint.h>
+
 # ifndef _OAWP_ENABLE_COLORS_
   #define _OAWP_ENABLE_COLORS_ 1
   /*
@@ -29,31 +31,51 @@
    */
 
   /* FOREGROUND */
-  #define RST "\x1B[0m"
+  #define RST "\033[0m"
 
-  /* Normal colors */
-  #define KBLK  "\x1B[30m" //black
-  #define KRED  "\x1B[31m" //red
-  #define KGRN  "\x1B[32m" //green
-  #define KYEL  "\x1B[33m" //yellow
-  #define KBLU  "\x1B[34m" //blue
-  #define KMAG  "\x1B[35m" //magenta
-  #define KCYN  "\x1B[36m" //cyan
-  #define KWHT  "\x1B[37m" //white
+  /* Normal foreground colors */
+  #define KBLK  "\033[30m" //black
+  #define KRED  "\033[31m" //red
+  #define KGRN  "\033[32m" //green
+  #define KYEL  "\033[33m" //yellow
+  #define KBLU  "\033[34m" //blue
+  #define KMAG  "\033[35m" //magenta
+  #define KCYN  "\033[36m" //cyan
+  #define KWHT  "\033[37m" //white
 
-  /* Bright colors */
-  #define KBBLK "\x1B[90m" //bright black(gray)
-  #define KBRED "\x1B[91m" //bright red
-  #define KBGRN "\x1B[92m" //bright green
-  #define KBYEL "\x1B[93m" //bright yellow
-  #define KBBLU "\x1B[94m" //bright blue
-  #define KBMAG "\x1B[95m" //bright magenta
-  #define KBCYN "\x1B[96m" //bright cyan
-  #define KBWHT "\x1B[97m" //bright white
+  /* Bright foreground colors */
+  #define KBBLK "\033[90m" //bright black(gray)
+  #define KBRED "\033[91m" //bright red
+  #define KBGRN "\033[92m" //bright green
+  #define KBYEL "\033[93m" //bright yellow
+  #define KBBLU "\033[94m" //bright blue
+  #define KBMAG "\033[95m" //bright magenta
+  #define KBCYN "\033[96m" //bright cyan
+  #define KBWHT "\033[97m" //bright white
+
+  /* Normal background colors */
+  #define BBLK  "\033[40m" //black background
+  #define BRED  "\033[41m" //red background
+  #define BGRN  "\033[42m" //green background
+  #define BYEL  "\033[43m" //yellow background
+  #define BBLU  "\033[44m" //blue background
+  #define BMAG  "\033[45m" //magenta background
+  #define BCYN  "\033[46m" //cyan background
+  #define BWHT  "\033[47m" //white background
+
+  /* Bright background colors */
+  #define BBBLK "\033[100m" //bright black (gray) background
+  #define BBRED "\033[101m" //bright red background
+  #define BBGRN "\033[102m" //bright green background
+  #define BBYEL "\033[103m" //bright yellow background
+  #define BBBLU "\033[104m" //bright blue background
+  #define BBMAG "\033[105m" //bright magenta background
+  #define BBCYN "\033[106m" //bright cyan background
+  #define BBWHT "\033[107m" //bright white background
 
   /* misc */
-  #define BOLD  "\x1B[1m"  //bold
-  #define UNDL  "\x1B[4m"  //underline
+  #define BOLD  "\033[1m"  //bold
+  #define UNDL  "\033[4m"  //underline
 
 # endif  /* _OAWP_ENABLE_COLORS_ */
 
@@ -68,12 +90,20 @@
 #define ERR_TEXT_PUTS_CAST(text)   ERR_TEXT_PUTS text
 
 /* Print the *AWP logo */
-void puts_logo(void);
+void puts_logo(uint8_t logo);
 
 /* Print the help menu */
 void help(void);
 
 /* Print the version of this */
 void version(void);
+
+enum awp_logo {
+logo_oawp,   /* Standard OAWP */
+logo_xawp,   /* X11 */
+logo_wawp,   /* Wayland */
+logo_mawp,   /* Apple macOS */
+logo_winawp  /* Microsoft Windows */
+};
 
 #endif

@@ -42,12 +42,11 @@ set(include_dirs
   "${PROJECT_BINARY_DIR}/include"
 )
 
-#foreach(target
-#  "${PROJECT_NAME}"
-#  "${PROJECT_NAME}_<EXAMPLE>"
-#)
-#  target_include_directories(${target} PRIVATE ${include_dirs})
-#endforeach()
+foreach(target
+  "${PROJECT_NAME}"
+)
+  target_include_directories(${target} PRIVATE ${include_dirs})
+endforeach()
 
 # Set the output directory for executables
 set(EXECUTABLE_OUTPUT_PATH
