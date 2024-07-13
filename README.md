@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./icons/OAWP_logo_row_v2.svg" width="50%">
+  <img src="./assets/icons/OAWP_logo_row_v2.svg" width="50%">
 </p>
 
 # Open Animated Wallpaper Player
