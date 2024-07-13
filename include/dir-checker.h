@@ -20,6 +20,8 @@
 #ifndef __DIR_CHECKER_H__
 # define __DIR_CHECKER_H__
 
+#include <stdint.h>
+
 /* Get the maximum path size based of
  * different operating systems. */
 #ifndef PATH_MAX
@@ -29,10 +31,35 @@
     #include <limits.h>
   #elif __APPLE__
     #include <limits.h>
-  #endif
-#endif
+  #elif _WIN32
+    #include <windef.h>
+      #define PATH_MAX MAX_PATH
+    #endif // MAX_PATH (windows)
+  #endif // _WIN32
+#endif // PATH_MAX
 
-void formatPath(char *path, char formattedPath[PATH_MAX]);
 
-void verifyDirPath(char path[PATH_MAX]);
-#endif
+/**
+ * @brief Check if the first character is a '~'.
+ * If so, this function will replace the '~' with a propper
+ * "/home/user/" path.
+ *
+ * @param path Input path.
+ * @param formatted_path Output formatted path.
+ *
+ * @return 0 if everything is alright.
+ *
+ * @note Thanks to OpenAI's ChatGPT for all the help!
+ */
+uint8_t formatPath(char *path, char formatted_path[PATH_MAX]);
+
+/**
+ * @brief Check if the directory exists.  If not, create them.
+ *
+ * @param path Path to check.
+ *
+ * @note Thanks to OpenAI's ChatGPT for all the help!
+ *
+ * @return 0 if everything is alright, 1 if errors occured.
+ */
+uint8_t verifyDirPath(char path[PATH_MAX]);

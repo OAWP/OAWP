@@ -19,6 +19,10 @@
 #ifndef __OAWP_H__
 # define __OAWP_H__
 
+#include <stdbool.h>
+#include <Imlib2.h>
+#include "dir-checker.h"
+
 #ifndef _POSIX_C_SOURCE
 # define _POSIX_C_SOURCE 199309L
 #endif
@@ -53,10 +57,6 @@
 #ifndef DEFAULT_CONFIG_FILE_PATH
 # define DEFAULT_CONFIG_FILE_PATH "~/.config/oawp/oawp.conf"
 #endif
-
-#include <stdbool.h>
-#include <limits.h>
-#include <Imlib2.h>
 
 /* If _DEBUG is true, print debug info.
  * Note that _DEBUG is a variable that may be changed in runtime and DEBUG is a

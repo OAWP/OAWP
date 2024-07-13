@@ -150,7 +150,7 @@ void puts_logo(uint8_t logo) {
   }
 
   /* After printing the logo, print the title and version as well */
-  printf(KBWHT "Open Animated Wallpaper Player v%s\n\n" RST, VERSION);
+  printf(KBWHT "Open Animated Wallpaper Player v%s\n\n" RST, __VERSION_STR);
 
   /* Fush the rainbow pipe file and close it unless it's stdout */
   fflush(rainbowPipe);
@@ -256,8 +256,7 @@ void puts_logo_auto() {
 void help(void) {
   printf(                                                                                 "\n"
          "OAWP - Open Animated Wallpaper Player"                                          "\n"
-         "Play animated wallpapers in X11 by passing OAWP a directory containing the"     "\n"
-         "pictures frames wanted to be displayed."                                        "\n"
+         "Play animated wallpapers"                                                       "\n"
                                                                                           "\n"
          "Usage: oawp [options]"                                                          "\n"
                                                                                           "\n"
@@ -269,10 +268,22 @@ void help(void) {
          "-v, --version\t\t\t"           "Output version information and license and exit""\n"
          "-D, --debug\t\t\t"             "Output the debug log"                           "\n"
          "-d, --directory\t\t\t"         "Set directory containing animation frames:"     "\n"
+
+         #ifdef _WIN32
+                                         "--directory "KBWHT"C:\\Users\\Foo\\OAWP\\wallgif\\"RST"\n"
+         #else
          "\t\t\t\t"                      "--directory "KBWHT"/home/foo/wallgif/"RST       "\n"
+         #endif
+
                                                                                           "\n"
          "-c, --config\t\t\t"            "Set another configuration file than the default""\n"
+
+         #ifdef _WIN32
+                                    KBWHT"%%APPDATA%%\\oawp\\oawp.conf"RST" configuration file"    "\n"
+         #else
          "\t\t\t\t"                 KBWHT"%s/.config/oawp/oawp.conf"RST" configuration file\n"
+         #endif
+
                                                                                           "\n"
          "-S, --set-static-wallpaper\t"  "Set a static wallpaper and exit"                "\n"
                                                                                           "\n"
@@ -282,12 +293,13 @@ void help(void) {
 }
 
 void version(void) {
-  printf("OAWP version %s" /* version number */                                           "\n"
+  printf("OAWP version %s | git %s" /* version number */                                  "\n"
+         "Source URI: <%s>"                                                               "\n"
                                                                                           "\n"
          "Copyright (C) 2023-2024 TheRealOne78"                                           "\n"
          "License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.""\n"
          "This is free software: you are free to change and redistribute it."             "\n"
          "There is NO WARRANTY, to the extent permitted by law."                          "\n"
                                                                                           "\n"
-        , VERSION);
+        , __VERSION_STR, GIT_HASH_SHORT, SRC_URI);
 }

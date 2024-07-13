@@ -17,14 +17,43 @@
  * along with OAWP. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef AUTHOR
-  #define AUTHOR "TheRealOne78"
+
+/// Project name
+#ifndef PROJECT_NAME
+  #define PROJECT_NAME "oawp"
 #endif
 
-#ifndef AUTHORMAIL
-  #define AUTHORMAIL "bajcsielias78@gmail.com"
+/// Project name in a long format
+#ifndef PROJECT_NAME_LONG
+  #define PROJECT_NAME_LONG "Open Animated Wallpaper Player"
 #endif
 
-#ifndef VERSION
-  #define VERSION "0.0.2"
+/// Project author's name
+#ifndef AUTHOR_NAME
+  #define AUTHOR_NAME "TheRealOne78"
+#endif
+
+/// Project author's E-Mail
+#ifndef AUTHOR_EMAIL
+  #define AUTHOR_EMAIL "bajcsielias78@gmail.com"
+#endif
+
+/// Project version string
+#ifndef __VERSION_STR
+  #define __VERSION_STR "0.0.3-alpha"
+#endif
+
+/// Git ID hash - short version
+#ifndef GIT_HASH_SHORT
+  #define GIT_HASH_SHORT "N/A"
+#endif
+
+/// Git ID hash - long version
+#ifndef GIT_HASH_LONG
+  #define GIT_HASH_LONG "N/A"
+#endif
+
+/// Project upstream source code
+#ifndef SRC_URI
+  #define SRC_URI "https://github.com/OAWP/OAWP.git"
 #endif
