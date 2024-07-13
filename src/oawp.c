@@ -33,7 +33,6 @@
 #include <dirent.h>
 
 /* Basic programming */
-#include <ctype.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -49,6 +48,7 @@
 #include "dir-checker.h"
 #include "oawp.h"
 #include "arg.h"
+#include "log.h"
 
 /* == DEFAULT PARAMETERS == */
 
@@ -105,13 +105,25 @@ int main(int argc, char *argv[]) {
   /* Format the path from relative to absolute */
   formatPath(DEFAULT_CONFIG_FILE_PATH, defaultConfigFilePath);
 
-  /*
-   * TODO
-   * argGetOpt() // arg.h
-   */
+  params_t parameters;
+  if (argGetOpt(argc, argv, &parameters)) {
+    log_error("Something went wrong with argument parsing.");
+    exit(EXIT_FAILURE);
+  }
 
   /* print OAWP color logo in ASCII art. */
   puts_logo(logo_oawp);
+
+  // TODO LOGGER
+  FILE *log_file = fopen("logfile.txt", "a");
+  if (!log_file) {
+      fprintf(stderr, "Failed to open log file!");
+      exit(EXIT_FAILURE);
+  }
+
+  /* Configure logger */
+  log_set_level(LOG_TRACE);
+  log_add_fp(log_file, LOG_TRACE);
 
   config_t cfg;
   //const char *cfgStaticWallpaper;
@@ -123,12 +135,12 @@ int main(int argc, char *argv[]) {
   if(!isArgConf)
     strcpy(confPath, defaultConfigFilePath);
 
-  if(_DEBUG)
-    fprintf(stdout, DEBUG_TEXT_PUTS": configuration file path: \"%s\"\n", confPath);
+
+    log_debug("configuration file path: \"%s\"", confPath);
 
   // Read the file. If there is an error, report it and exit.
   if(! config_read_file(&cfg, confPath)) {
-    fprintf(stderr, ERR_TEXT_PUTS"%s:%d - %s\n", config_error_file(&cfg),
+    log_error("%s:%d - %s", config_error_file(&cfg),
             config_error_line(&cfg), config_error_text(&cfg));
     config_destroy(&cfg);
     exit(EXIT_FAILURE);
@@ -137,17 +149,18 @@ int main(int argc, char *argv[]) {
   if(config_lookup_bool(&cfg, "debug", &cfgDebug))
     _DEBUG = cfgDebug;
   else
-    fprintf(stderr, ERR_TEXT_PUTS"No 'debug' setting in configuration file.\n");
+    log_error("No 'debug' setting in configuration file.");
+
   if(_DEBUG)
-    fprintf(stdout, DEBUG_TEXT_PUTS": Enabled debug\n");
+    log_debug("Enabled debug");
 
   if(!hasArgStaticWallpaper && config_lookup_string(&cfg, "static-wallpaper", &cfgStaticWallpaper)){
     if(access(cfgStaticWallpaper, F_OK) != 0) {
-      fprintf(stderr, ERR_TEXT_PUTS"Error: %s from 'static-wallpaper' does not exists.\n", cfgStaticWallpaper);
+      log_error("%s from 'static-wallpaper' does not exists.", cfgStaticWallpaper);
       exit(1);
     }
     if(access(cfgStaticWallpaper, R_OK) != 0) {
-      fprintf(stderr, ERR_TEXT_PUTS"Error: %s from 'static-wallpaper' cannot be read. Please check the file permissions.\n", cfgStaticWallpaper);
+      log_error("%s from 'static-wallpaper' cannot be read. Please check the file permissions.", cfgStaticWallpaper);
       exit(1);
     }
     imgPath = (char**)malloc(1 * sizeof(char*));
@@ -167,21 +180,21 @@ int main(int argc, char *argv[]) {
     getImgPath(pathConf, 0); /* getImgPath: 0 == conf; 1 == arg */
   }
   else if(! usingStaticWallpaper) {
-    fprintf(stderr, ERR_TEXT_PUTS"No 'path' setting in configuration file.\n");
+    log_error("No 'path' setting in configuration file.");
     exit(1);
   }
 
   if(!hasArgTime && config_lookup_float(&cfg, "time", &cfgTime) && !usingStaticWallpaper) {
     if(cfgTime < MIN_FRAME_TIME) {
-      fprintf(stderr, ERR_TEXT_PUTS"Error: Time cannot be less than %lf.\n", MIN_FRAME_TIME);
+      log_error("Time cannot be less than %lf.", MIN_FRAME_TIME);
       exit(1);
     }
     frameTime = cfgTime;
-    if(_DEBUG)
-      fprintf(stdout, DEBUG_TEXT_PUTS": frameTime: %lf\n", frameTime);
+
+      log_debug("frameTime: %lf", frameTime);
   }
   else if(! usingStaticWallpaper)
-    fprintf(stderr, WARN_TEXT_PUTS"No 'time' setting in configuration file. Using default '0.07' seconds as time parameter.\n");
+    log_warn("No 'time' setting in configuration file. Using default '0.07' seconds as time parameter.");
 
   if(config_lookup_bool(&cfg, "fit", &cfgFit) && !hasArgFit && !usingStaticWallpaper) {
     hasConfFit = cfgFit;
@@ -189,8 +202,8 @@ int main(int argc, char *argv[]) {
 
   config_destroy(&cfg);
 
-  if(_DEBUG)
-    fprintf(stdout, DEBUG_TEXT_PUTS": Loading images\n");
+
+    log_debug("Loading images ...");
 
   int fileOffset = 0;
 
@@ -204,38 +217,36 @@ int main(int argc, char *argv[]) {
   if(!usingStaticWallpaper) {
     for(int temp = 0; temp < imgCount - fileOffset; temp++) {
       images[temp] = imlib_load_image(imgPath[(fileOffset+temp)]);
-      if(_DEBUG)
-        fprintf(stdout, DEBUG_TEXT_PUTS": Imlib loaded %s\n", (imgPath)[(fileOffset+temp)]);
+      log_debug("Imlib loaded %s", (imgPath)[(fileOffset+temp)]);
     }
-    if(_DEBUG)
-      fprintf(stdout, "\n");
+    log_debug("");
   }
   else {
     images[0] = imlib_load_image((imgPath)[0]);
-    if(_DEBUG)
-      fprintf(stdout, DEBUG_TEXT_PUTS": Imlib loaded %s\n", (imgPath)[0]);
+
+      log_debug("Imlib loaded %s", (imgPath)[0]);
   }
   freeUsingPath();
 
   // Loading the monitors, counting them and getting the resolution
-  if(_DEBUG)
-    fprintf(stdout, DEBUG_TEXT_PUTS": Loading monitors\n");
+
+    log_debug("Loading monitors ...");
 
   Display *display = XOpenDisplay(NULL);
   if (!display) {
-    fprintf(stderr, ERR_TEXT_PUTS"Could not open XDisplay\n");
+    log_error("Could not open XDisplay");
     exit(42);
   }
 
   const int screen_count = XScreenCount(display);
-  if(_DEBUG)
-    fprintf(stdout, DEBUG_TEXT_PUTS": Found %d screens\n", screen_count);
+
+    log_debug("Found %d screens", screen_count);
 
   Monitor *monitors = malloc(sizeof(Monitor) * screen_count);
   for(int current_screen = 0; current_screen < screen_count;
       ++current_screen) {
-    if(_DEBUG)
-      fprintf(stdout, DEBUG_TEXT_PUTS": Running screen %d\n", current_screen);
+
+      log_debug("Running screen %d", current_screen);
 
     const int width  = DisplayWidth(display, current_screen);
     const int height = DisplayHeight(display, current_screen);
@@ -243,8 +254,8 @@ int main(int argc, char *argv[]) {
     Visual *vis      = DefaultVisual(display, current_screen);
     const int cm     = DefaultColormap(display, current_screen);
 
-    if(_DEBUG) {
-      fprintf(stdout, DEBUG_TEXT_PUTS": Screen %d: width: %d, height: %d, depth: %d\n",
+     {
+      log_debug("Screen %d: width: %d, height: %d, depth: %d",
               current_screen, width, height, depth);
     }
 
@@ -264,13 +275,13 @@ int main(int argc, char *argv[]) {
     imlib_context_set_color_range(imlib_create_color_range());
     imlib_context_pop();
   }
-  if(_DEBUG)
-    fprintf(stdout, DEBUG_TEXT_PUTS": Loaded %d screens\n", screen_count);
+
+    log_debug("Loaded %d screens.", screen_count);
 
   /* Rendering the images on the screens found at the
    * choosen time interval, forever                */
-  if(_DEBUG)
-    fprintf(stdout, DEBUG_TEXT_PUTS": Starting render loop\n");
+
+    log_debug("Starting render loop ...");
 
   struct timespec timeout;
   double time_nsec_raw = frameTime;
@@ -301,8 +312,8 @@ int main(int argc, char *argv[]) {
         imlib_context_pop();
       }
       if(usingStaticWallpaper) {
-        if(_DEBUG)
-          fprintf(stdout, DEBUG_TEXT_PUTS": Using static wallpaper detected, exiting...\n");
+
+          log_debug("Using static wallpaper detected, exiting ...");
         exit(EXIT_SUCCESS);
       }
 
@@ -317,8 +328,7 @@ void term_handler(int signum) {
   /* When receiving a SIGTERM or SIGINT, this function will exit gracefully
    * with an informative quit message to the user. */
 
-  fprintf(stdout, "\n"INFO_TEXT_PUTS"Quiting...\n");
-  fflush(stdout);
+  log_info("Quiting...");
 
   exit(EXIT_SUCCESS);
 }
@@ -330,11 +340,11 @@ void getImgCount(char str[PATH_MAX]) {
   imgCount = 0;
 
   if(access(str, F_OK) != 0) {
-    fprintf(stderr, ERR_TEXT_PUTS"Error: %s from 'path' does not exists.\n", str);
+    log_error("%s from 'path' does not exists.", str);
     exit(1);
   }
   if(access(str, R_OK) != 0) {
-    fprintf(stderr, ERR_TEXT_PUTS"Error: %s from 'path' cannot be read. Please check the file permissions.\n", str);
+    log_error("%s from 'path' cannot be read. Please check the file permissions.", str);
     exit(1);
   }
 
@@ -384,13 +394,13 @@ void getImgPath(char str[PATH_MAX], int choice) {
    * statements are used to know if the first 1-2 files
    * are or not . and ..                                  */
 
-  if(_DEBUG) {
+   {
     switch(choice) {
       case 0:
-        fprintf(stdout, DEBUG_TEXT_PUTS": Using \"%s\" from configuration file\n", str);
+        log_debug("Using \"%s\" from configuration file.", str);
         break;
       case 1:
-        fprintf(stdout, DEBUG_TEXT_PUTS": Using user arguments for configurations\n", str);
+        log_debug("Using user arguments for configurations.", str);
         break;
     }
   }
@@ -411,7 +421,7 @@ void getImgPath(char str[PATH_MAX], int choice) {
       if(str_len < PATH_MAX)
         str[str_len] = '/';
       else {
-        fprintf(stderr, ERR_TEXT_PUTS"Error: Animation path is too big and exceedes system's maximum path length: %d characters long\n", PATH_MAX);
+        log_error("Animation path is too big and exceedes system's maximum path length: %d characters long", PATH_MAX);
       }
     }
 
@@ -427,12 +437,10 @@ void getImgPath(char str[PATH_MAX], int choice) {
     qsort(imgPath, imgCount, sizeof((imgPath)[0]), compare_fun);
 
     /* Prints all the selected files */
-    if(_DEBUG) {
-      fprintf(stdout, "\n"DEBUG_TEXT_PUTS": Selected files:\n");
-      for(int i = 0; i < imgCount; i++)
-        fprintf(stdout, "  | File %d: %s\n", i, (imgPath)[i]);
-      fprintf  (stdout, "  | ** End of files **\n\n");
-    }
+    log_debug("Selected files:");
+    for(int i = 0; i < imgCount; i++)
+      log_debug("  | File %d: %s", i, (imgPath)[i]);
+    log_debug(  "  | ** End of files **\n");
 
     /* Now check if there are any "." and ".." files in path
      * in order to know where the actual images start     */
@@ -441,8 +449,8 @@ void getImgPath(char str[PATH_MAX], int choice) {
     strcat(tempImgPath1dot, ".");
     if(strcmp((imgPath)[0], tempImgPath1dot) == 0) {
       hasCurrentDir = true;
-      if(_DEBUG)
-        fprintf(stdout, DEBUG_TEXT_PUTS": \"%s has current directory file, skipping it.\n", str);
+
+        log_debug("\"%s\" has current directory file, skipping it.", str);
     }
     else
       hasCurrentDir = false;
@@ -452,8 +460,8 @@ void getImgPath(char str[PATH_MAX], int choice) {
     strcat(tempImgPath2dot, "..");
     if(strcmp((imgPath)[1], tempImgPath2dot) == 0) {
       hasParentDir = true;
-      if(_DEBUG)
-        fprintf(stdout, DEBUG_TEXT_PUTS": \"%s has parent directory file, skipping it.\n", str);
+
+        log_debug("\"%s\" has parent directory file, skipping it.", str);
     }
     else
       hasParentDir = false;
@@ -464,13 +472,13 @@ void freeUsingPath(void) {
    * allocated memory from the using image path */
 
   for(int temp; temp < imgCount; temp++) {
-    if(_DEBUG)
-      fprintf(stdout, DEBUG_TEXT_PUTS": Unallocated address "KGRN"%p"RST" pointing to file index %d\n",
+
+      log_debug("Deallocated address "KGRN"%p"RST" pointing to file index %d",
               (imgPath)[temp], temp);
     free((imgPath)[temp]);
   }
-    if(_DEBUG)
-      fprintf(stdout, DEBUG_TEXT_PUTS": Unallocated dynamic array of images at address "KGRN"%p"RST"\n\n", (imgPath));
+   
+      log_debug("Deallocated dynamic array of images at address "KGRN"%p"RST"\n", (imgPath));
     free(imgPath);
 }
 
@@ -511,77 +519,4 @@ void setRootAtoms(Display *display, Monitor *monitor) {
                   PropModeReplace, (unsigned char *)&monitor->pixmap, 1);
   XChangeProperty(display, monitor->root, atom_eroot, XA_PIXMAP, 32,
                   PropModeReplace, (unsigned char *)&monitor->pixmap, 1);
-}
-
-void ImFit(Imlib_Image *image[]) {
-  /* This function is responsible for fitting the image when rendering depending
-   * in user's arguments.
-   *
-   * This function gets passed a pointer to the Imlib images and uses a global char*
-   * variable "fitOpt", which has the fit option.
-   *
-   * Right now, the available fit options are the following:
-   *   * FULLSCREEN,
-   *   * FULLSCREEN CROPPED,
-   *   * CENTERED,
-   *   * TOP-LEFT,
-   *   * BOTTOM-LEFT,
-   *   * BOTTOM-RIGHT,
-   *   * TOP-RIGHT.
-   * Despite these being written with uppercase letters, the fitOpt is not case
-   * sensitive.
-   *
-   * ImFit() will also modify the loaded Imlib images based on fitOpt.
-   */
-
-  /* This function is still a TODO and this is it's pseudo-code: */
-  int fitOptLimit = 6;
-  //int imWidth   = Imlib_get_image_width(*sampleImg);
-  //int imHeight  = Imlib_get_image_height(*sampleImg);
-void ImFit(Imlib_Image *image[]) {
-
-  for(int temp = 0; temp < strlen(fitOpt); temp++) /* Uppercase every char of fitOpt */
-    fitOpt[temp] = toupper(fitOpt[temp]);
-
-  if(strcmp(fitOpt, "FULLSCREEN") == 0) {
-    //Scale image based on width and height;
-    //return position;
-  }
-
-  else if(strcmp(fitOpt, "FULLSCREEN CROPPED") == 0) {
-    //pass images to crop function image based on width and height since the images
-    //will suffer modifications;
-    //return position;
-  }
-
-  else if(strcmp(fitOpt, "CENTERED") == 0) {
-    //Determine the center of the image and XScreen's width and height and then
-    //determine where the position should start from with that info;
-  }
-
-  else if(strcmp(fitOpt, "TOP-LEFT") == 0) {
-    //Return the position as 0,0 since no modifications are needed;
-  }
-
-  else if(strcmp(fitOpt, "BOTTOM-LEFT") == 0) {
-    //Determine XScreen's height;
-    //Return position as (Xscreen height - img height),0;
-  }
-
-  else if(strcmp(fitOpt, "BOTTOM-RIGHT") == 0) {
-    //Determine XScreen's width and height
-    //Return position as (XScreen height - img height),(XScreen width - img width);
-  }
-
-  else if(strcmp(fitOpt, "TOP-RIGHT") == 0) {
-    //Determine XScreen's width and height;
-    //Return position as 0,(XScreen width - img width);
-  }
-
-  else {
-    fprintf(stderr, ERR_TEXT_PUTS"Fatal error! %s is not a valid fit option!\n"
-                    "Please make sure fit is configured correctly\n",
-            fitOpt);
-    exit(EXIT_FAILURE);
-  }
 }

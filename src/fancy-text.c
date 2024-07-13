@@ -232,6 +232,27 @@ void puts_logo(uint8_t logo) {
    * #-> (end comments)                                           */
 }
 
+void puts_logo_auto() {
+#ifdef __APPLE__
+  puts_logo(logo_mawp);
+
+#elif _WIN32
+  puts_logo(logo_mawp);
+
+#else
+  if (getenv("DISPLAY") == NULL) {
+    // fprintf(stderr, ERR_TEXT_PUTS": Couldn't find any active display.");
+    puts_logo(logo_oawp);
+    return;
+  } else if (getenv("DISPLAY_WAYLAND") == NULL) {
+    puts_logo(logo_wawp);
+    return;
+  }
+  puts_logo(logo_xawp);
+
+#endif
+}
+
 void help(void) {
   printf(                                                                                 "\n"
          "OAWP - Open Animated Wallpaper Player"                                          "\n"

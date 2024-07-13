@@ -40,6 +40,6 @@ typedef struct params {
 } params_t;
 
 
-uint8_t argGetOpt(int *argc, char ***argv, params_t *parameters);
+uint8_t argGetOpt(int argc, char **argv, params_t *parameters);
 
 #endif // __ARG_H__

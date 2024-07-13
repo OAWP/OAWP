@@ -63,6 +63,11 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 #### DEPENDENCIES CHECK ####
 #--------------------------#
 
+find_package(Imlib2 REQUIRED)
+find_package(X11 REQUIRED)
+#find_package(Wayland REQUIRED) TODO
+find_package(libconfig REQUIRED)
+
 # Import modules
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules")
 
@@ -115,6 +120,7 @@ endif (DOXYGEN_FOUND)
 #---------------#
 enable_testing()
 #add_subdirectory(tests)
+
 
 #### PACKAGE ####
 #---------------#
