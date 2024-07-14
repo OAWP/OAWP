@@ -51,7 +51,7 @@
  *
  * @note Thanks to OpenAI's ChatGPT for all the help!
  */
-uint8_t formatPath(char *path, char formatted_path[PATH_MAX]);
+uint8_t formatPath(const char *restrict path, char formatted_path[PATH_MAX]);
 
 /**
  * @brief Check if the directory exists.  If not, create them.
@@ -62,4 +62,6 @@ uint8_t formatPath(char *path, char formatted_path[PATH_MAX]);
  *
  * @return 0 if everything is alright, 1 if errors occured.
  */
-uint8_t verifyDirPath(char path[PATH_MAX]);
+uint8_t verifyDirPath(const char path[PATH_MAX]);
+
+int compare_fun (const void *restrict p, const void *restrict q);

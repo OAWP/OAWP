@@ -21,6 +21,7 @@
 #define __FANCY_TEXT_H__
 
 #include <stdint.h>
+#include <stdbool.h>
 
 # ifndef _OAWP_ENABLE_COLORS_
   #define _OAWP_ENABLE_COLORS_ 1
@@ -89,11 +90,13 @@
 #define WARN_TEXT_PUTS_CAST(text)  WARN_TEXT_PUTS text
 #define ERR_TEXT_PUTS_CAST(text)   ERR_TEXT_PUTS text
 
-/** Print the *AWP logo */
-void puts_logo(uint8_t logo);
+static bool isExecutable(const char *restrict executable);
 
 /** Print the *AWP logo */
-void puts_logo_auto();
+void puts_logo(const uint8_t logo);
+
+/** Print the *AWP logo */
+void puts_logo_auto(void);
 
 /* Print the help menu */
 void help(void);

@@ -30,11 +30,12 @@ set("${PROJECT_NAME}_SRC"
   arg.c
   dir-checker.c
   fancy-text.c
-  fit.c
+  log.c
   oawp.c
+  pixmanip.c
 )
 
-add_executable(${PROJECT_NAME}
+add_executable("${PROJECT_NAME}"
   "${${PROJECT_NAME}_SRC}")
 
 set(include_dirs
@@ -46,7 +47,18 @@ foreach(target
   "${PROJECT_NAME}"
 )
   target_include_directories(${target} PRIVATE ${include_dirs})
+  target_include_directories(${target} PRIVATE IMLIB2_INCLUDE_DIR)
+  target_include_directories(${target} PRIVATE LIBPCRE_INCLUDE_DIR)
+  target_include_directories(${target} PRIVATE X11_INCLUDE_DIR)
 endforeach()
+
+target_link_libraries("${PROJECT_NAME}"
+  "${IMLIB2_LINK_LIBRARIES}"
+  "${LIBPCRE_LINK_LIBRARIES}"
+  "${LIBCONFIG_LIBRARIES}"
+  "${X11_LIBRARIES}"
+  "${MATH_LIBRARY}"
+)
 
 # Set the output directory for executables
 set(EXECUTABLE_OUTPUT_PATH

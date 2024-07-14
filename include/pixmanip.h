@@ -37,17 +37,17 @@ enum fitOpt {
 };
 
 /* Mutual exclusion masks */
-const int POSITION_MASK = _FIT_FULLSCREEN | _FIT_CENTERED | _FIT_TOP_LEFT |
-                          _FIT_BOTTOM_LEFT | _FIT_BOTTOM_RIGHT | _FIT_TOP_RIGHT;
-const int FIT_MASK = _FIT_CROPPED | _FIT_STRETCHED;
+const static int POSITION_MASK = _FIT_FULLSCREEN | _FIT_CENTERED | _FIT_TOP_LEFT |
+                                 _FIT_BOTTOM_LEFT | _FIT_BOTTOM_RIGHT | _FIT_TOP_RIGHT;
+const static int FIT_MASK = _FIT_CROPPED | _FIT_STRETCHED;
 
 /** Sets fit options while checkig for conflicts */
-void setFitOpts(int *currentOptions, int newOption);
+void setFitOpts(int *restrict currentOptions, const int newOption);
 
 /** Transforms strings like "BOTTOM-RIGHT STRETCHED" to an integer */
-int fit_atoe(char *fitOpt);
+int fit_atoe(const char *restrict fitOpt);
 
 /** Manipulates frames with Imlib2 */
-void ImFit_fitOpts(Imlib_Image *image[], int fitOpts);
+void ImFit_fitOpts(Imlib_Image *image[], const int fitOpts);
 
 #endif // __PIXMANIP_H__

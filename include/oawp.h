@@ -73,13 +73,12 @@ typedef struct {
 void help(void);
 void version(void);
 
-void term_handler(int signum);
+void term_handler(const int signum);
 
-void getImgCount(char str[PATH_MAX]);
-void getImgPath(char str[PATH_MAX], int choice);
-static int compare_fun(const void *p, const void *q);
+void getImgCount(const char str[PATH_MAX]);
+void getImgPath(const char str[PATH_MAX]);
 void freeUsingPath(void);
-void setRootAtoms(Display *display, Monitor *monitor);
+void setRootAtoms(Display *restrict display, Monitor *restrict monitor);
 void ImFit(Imlib_Image *image[]);
 
 #endif

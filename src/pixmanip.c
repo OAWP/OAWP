@@ -25,7 +25,7 @@
 #include "pixmanip.h"
 #include "log.h"
 
-void setFitOpts(int *currentOptions, int newOption) {
+void setFitOpts(int *restrict currentOptions, const int newOption) {
 
     // Check position flag conflicts
     if (newOption & POSITION_MASK) {
@@ -44,11 +44,7 @@ void setFitOpts(int *currentOptions, int newOption) {
     *currentOptions |= newOption;
 }
 
-int fit_atoe(char *fitOptStr) {
-
-    for (uint32_t temp = 0; temp < strlen(fitOptStr);
-         temp++) /* Uppercase every char of fitOpt */
-        fitOptStr[temp] = toupper(fitOptStr[temp]);
+int fit_atoe(const char *restrict fitOptStr) {
 
     int fitOpts = 0;
     char *token;
@@ -57,6 +53,10 @@ int fit_atoe(char *fitOptStr) {
     /* Create a copy of the input string since strtok modifies the string */
     strncpy(strCopy, fitOptStr, sizeof(strCopy));
     strCopy[sizeof(strCopy) - 1] = '\0';
+
+    /* Uppercase every char of fitOpt */
+    for (uint32_t temp = 0; temp < strlen(strCopy); temp++)
+        strCopy[temp] = toupper(strCopy[temp]);
 
     /* Tokenize the input string using space and comma as delimiters */
     token = strtok(strCopy, " ,");
@@ -90,7 +90,7 @@ int fit_atoe(char *fitOptStr) {
     return fitOpts;
 }
 
-void ImFit_fitOpts(Imlib_Image *image[], int fitOpts) {
+void ImFit_fitOpts(Imlib_Image *image[], const int fitOpts) {
     /* This function is responsible for fitting the image when rendering depending
      * in user's arguments.
      *

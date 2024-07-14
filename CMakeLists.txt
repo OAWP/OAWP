@@ -43,7 +43,8 @@ include(AddGitHash)
 add_git_hash()
 
 # Set default build type
-set(default_build_type "Release")
+#set(default_build_type "Release")
+set(default_build_type "Debug")
 
 # If default build type
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -67,6 +68,8 @@ find_package(Imlib2 REQUIRED)
 find_package(X11 REQUIRED)
 #find_package(Wayland REQUIRED) TODO
 find_package(libconfig REQUIRED)
+find_package(PCRE REQUIRED)
+find_library(MATH_LIBRARY m)
 
 # Import modules
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules")
@@ -115,6 +118,7 @@ endif (DOXYGEN_FOUND)
 #### INSTALL ####
 #---------------#
 
+install(CODE "message(\"Install step does nothing yet\")")
 
 #### TESTING ####
 #---------------#

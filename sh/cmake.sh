@@ -29,7 +29,7 @@ cmake_init() {
     # Configure the project
     mkdir -p "${CMAKE_BINARY_DIR}"
 
-    cmake -S "${CMAKE_SOURCE_DIR}" -B "${CMAKE_BINARY_DIR}"
+    cmake -S . -B "${CMAKE_BINARY_DIR}"
     EXIT_CODE=${?}   
 
     if [ ${EXIT_CODE} -ne 0 ]; then

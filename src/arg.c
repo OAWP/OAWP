@@ -29,7 +29,7 @@
 #include "log.h"
 
 
-uint8_t argGetOpt(int argc, char **argv, params_t *parameters) {
+uint8_t argGetOpt(const int argc, const char **argv, params_t *restrict parameters) {
 
     /* Struct argument options */
     static struct option long_options [] = {
@@ -45,7 +45,7 @@ uint8_t argGetOpt(int argc, char **argv, params_t *parameters) {
     };
     /* And check for arguments */
     while(1) {
-        int c = getopt_long(argc, argv, "ht:vDf:d:c:S:", long_options, NULL);
+        int c = getopt_long(argc, (char**)argv, "ht:vDf:d:c:S:", long_options, NULL);
         /* Detect the end of the options. */
         if (c == -1)
             break;
@@ -94,9 +94,9 @@ uint8_t argGetOpt(int argc, char **argv, params_t *parameters) {
 
                 /* directory */
             case 'd':
-                strcpy(parameters->imDirPath, optarg);
+                strcpy((char*)parameters->imDirPath, optarg);
                 getImgCount(parameters->imDirPath);
-                getImgPath(parameters->imDirPath, 1);
+                getImgPath(parameters->imDirPath);
                 parameters->hasImDirPath = true;
                 break;
 
@@ -110,7 +110,7 @@ uint8_t argGetOpt(int argc, char **argv, params_t *parameters) {
                     log_error("%s configuration file cannot be read. Please check the file permissions.", optarg);
                     exit(1);
                 }
-                strcpy(parameters->confPath, optarg);
+                strcpy((char*)parameters->confPath, optarg);
                 parameters->hasConfPath = true;
                 break;
 
@@ -147,19 +147,4 @@ uint8_t argGetOpt(int argc, char **argv, params_t *parameters) {
     }
 
     return 0; /* EXIT-VALUE: Everything OK */
-}
-
-static int compare_fun (const void *p, const void *q) {
-    /* compare_fun() and some code from getImgPath() from
-     * https://www.linuxquestions.org/questions/programming-9/how-to-list-and-sort-files-in-some-directory-by-the-names-on-linux-win-in-c-4175555160/
-     * by NevemTeve - Thank you NevemTeve
-     * This function is mandatory for qsort to be able to know
-     * what approach to use to sort the images              */
-
-    const char *l = *(const char**)p;
-    const char *r = *(const char**)q;
-    int cmp;
-
-    cmp = strcmp(l, r);
-    return cmp;
 }

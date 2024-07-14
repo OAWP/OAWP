@@ -36,6 +36,7 @@ For example, instead of adding the path of the wallpaper files in the source cod
 * libX11
 * libconfig
 * lcat-rs/roflcat/lolcat (Optional)
+* libpcre
 
 ## TODO:
 

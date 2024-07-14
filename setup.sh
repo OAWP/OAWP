@@ -29,7 +29,7 @@
 . ./sh/chkroot.sh # Check for ROOT id
 
 # Install Dependencies
-sh ./sh/prepare.sh
+. ./sh/prepare.sh
 EXIT_CODE=${?}
 if [ ${EXIT_CODE} -ne 0 ]; then
     exit ${EXIT_CODE};

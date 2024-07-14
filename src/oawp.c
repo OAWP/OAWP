@@ -49,6 +49,7 @@
 #include "oawp.h"
 #include "arg.h"
 #include "log.h"
+#include "pixmanip.h"
 
 /* == DEFAULT PARAMETERS == */
 
@@ -58,10 +59,10 @@ bool _DEBUG = DEBUG;
 char defaultConfigFilePath[PATH_MAX];
 
 /* Basic config/argument variables */
-//char pathConf[PATH_MAX];                   /* path to images directory, from configuration file */ //TODO remove this
-//char pathArg[PATH_MAX];                    /* path to images directory, from user argument (not -c) */ //TODO remove this
+//char params_config.imDirPath[PATH_MAX];                   /* path to images directory, from configuration file */ //TODO remove this
+//char params_args.imDirPath[PATH_MAX];                    /* path to images directory, from user argument (not -c) */ //TODO remove this
 
-char *confPath;          /* path to configuration file */
+char confPath[PATH_MAX];          /* path to configuration file */
 unsigned imgCount;                         /* number of images */
 char **imgPath;                            /* pointers to paths of images, from configuration file */ //TODO: replace with linked list
 double frameTime = DEFAULT_FRAME_TIME;     /* time between frames */ /* The time set is the default one */
@@ -76,12 +77,12 @@ double frameTime = DEFAULT_FRAME_TIME;     /* time between frames */ /* The time
 //bool isArgConf = false;                    /* If true, the configuration file from argument will be used */ //replaced with params.hasConf
 
 //bool hasArgTime = false;                   /* If true, time from user argument will be used */
-//bool hasArgDir = false;                    /* If true, the directory will be used from user argument */
+//bool params_args.hasImDirPath = false;                    /* If true, the directory will be used from user argument */
 
-//bool usingStaticWallpaper = false;         /* If true, OAWP will run only once to set a static wallpaper */
+bool usingStaticWallpaper = false;         /* If true, OAWP will run only once to set a static wallpaper */
 //bool hasArgStaticWallpaper = false;        /* If true, it will be used the Static Wallpaper from user argument */
 
-//bool hasArgFit = false;                    /* If true, the fit option from user argument will be used - Order 0 */
+//bool params_args.hasFitOpt = false;                    /* If true, the fit option from user argument will be used - Order 0 */
 //bool hasConfFit = false;                   /* If true, the fit option from configuration file will be used - Order 1 */
 //char defaultFitOpt[] = DEFAULT_FIT_OPTION; /* Default Fit Option - Order 2 */ //TODO: use enums
 //char *fitOpt;                              /* The final fit option */
@@ -98,26 +99,10 @@ int main(int argc, char *argv[]) {
   signal(SIGTERM, term_handler);
   signal(SIGINT, term_handler);
 
-  /* TODO: See the purpose of this string and comment it here */
-  char configTime[6];
-  memset(configTime, '\0', sizeof(configTime));
-
-  /* Format the path from relative to absolute */
-  formatPath(DEFAULT_CONFIG_FILE_PATH, defaultConfigFilePath);
-
-  params_t parameters;
-  if (argGetOpt(argc, argv, &parameters)) {
-    log_error("Something went wrong with argument parsing.");
-    exit(EXIT_FAILURE);
-  }
-
-  /* print OAWP color logo in ASCII art. */
-  puts_logo(logo_oawp);
-
   // TODO LOGGER
   FILE *log_file = fopen("logfile.txt", "a");
   if (!log_file) {
-      fprintf(stderr, "Failed to open log file!");
+      fprintf(stderr, "Failed to open log file!\n");
       exit(EXIT_FAILURE);
   }
 
@@ -125,18 +110,27 @@ int main(int argc, char *argv[]) {
   log_set_level(LOG_TRACE);
   log_add_fp(log_file, LOG_TRACE);
 
+  /* Format the path from relative to absolute */
+  formatPath(DEFAULT_CONFIG_FILE_PATH, defaultConfigFilePath);
+
+  params_t params_args;
+  params_t params_config;
+  if (argGetOpt(argc, (const char**)argv, &params_args)) {
+    log_error("Something went wrong with argument parsing.");
+    exit(EXIT_FAILURE);
+  }
+
+  /* print OAWP color logo in ASCII art. */
+  puts_logo_auto();
+
   config_t cfg;
-  //const char *cfgStaticWallpaper;
-  //const char *cfgPath;
-  //double cfgTime;
-  //int cfgDebug;
-  //int cfgFit;
+  const char *tmp_cfg_str;
+
   config_init(&cfg);
-  if(!isArgConf)
+  if(! params_args.hasConfPath)
     strcpy(confPath, defaultConfigFilePath);
 
-
-    log_debug("configuration file path: \"%s\"", confPath);
+  log_debug("configuration file path: \"%s\"", confPath);
 
   // Read the file. If there is an error, report it and exit.
   if(! config_read_file(&cfg, confPath)) {
@@ -146,64 +140,82 @@ int main(int argc, char *argv[]) {
     exit(EXIT_FAILURE);
   }
 
-  if(config_lookup_bool(&cfg, "debug", &cfgDebug))
-    _DEBUG = cfgDebug;
-  else
+  if(config_lookup_bool(&cfg, "debug", &params_config.debug)) {
+    params_config.hasDebug = true;
+    _DEBUG = params_config.debug;
+  } else {
+    params_config.hasDebug = false;
     log_error("No 'debug' setting in configuration file.");
+  }
 
   if(_DEBUG)
     log_debug("Enabled debug");
 
-  if(!hasArgStaticWallpaper && config_lookup_string(&cfg, "static-wallpaper", &cfgStaticWallpaper)){
-    if(access(cfgStaticWallpaper, F_OK) != 0) {
-      log_error("%s from 'static-wallpaper' does not exists.", cfgStaticWallpaper);
-      exit(1);
+  if(! params_args.hasStaticWallpaper &&
+     config_lookup_string(&cfg, "static-wallpaper", &tmp_cfg_str)) {
+    strcpy(params_config.staticWallpaper, tmp_cfg_str);
+
+    if(access(params_config.staticWallpaper, F_OK) != 0) {
+      log_error("%s from 'static-wallpaper' does not exist.", params_config.staticWallpaper);
+      exit(EXIT_FAILURE);
     }
-    if(access(cfgStaticWallpaper, R_OK) != 0) {
-      log_error("%s from 'static-wallpaper' cannot be read. Please check the file permissions.", cfgStaticWallpaper);
-      exit(1);
+
+    if(access(params_config.staticWallpaper, R_OK) != 0) {
+      log_error("%s from 'static-wallpaper' cannot be read. Please check the file permissions.", params_config.staticWallpaper);
+      exit(EXIT_FAILURE);
     }
+
     imgPath = (char**)malloc(1 * sizeof(char*));
     imgPath[0] = (char*)malloc(PATH_MAX * sizeof(char));
-    strcpy(imgPath[0], cfgStaticWallpaper);
+    strcpy(imgPath[0], params_config.staticWallpaper);
     imgCount++;
     usingStaticWallpaper = true;
   }
 
-  if(hasArgDir && !usingStaticWallpaper) {
-    getImgCount(pathArg);
-    getImgPath(pathArg, 1);
+  if(params_args.hasImDirPath && !usingStaticWallpaper) {
+    getImgCount(params_args.imDirPath);
+    getImgPath(params_args.imDirPath);
   }
-  else if(!hasArgDir && config_lookup_string(&cfg, "path", &cfgPath) && !usingStaticWallpaper) {
-    strcpy(pathConf, cfgPath);
-    getImgCount(pathConf);
-    getImgPath(pathConf, 0); /* getImgPath: 0 == conf; 1 == arg */
+  else if(!params_args.hasImDirPath &&
+          config_lookup_string(&cfg, "path", &tmp_cfg_str) &&
+          !usingStaticWallpaper) {
+    strcpy(params_config.imDirPath, tmp_cfg_str);
+    getImgCount(params_config.imDirPath); //TODO: Do that somewhere else
+    getImgPath(params_config.imDirPath);  //TODO: Do that somewhere else
   }
   else if(! usingStaticWallpaper) {
     log_error("No 'path' setting in configuration file.");
     exit(1);
   }
 
-  if(!hasArgTime && config_lookup_float(&cfg, "time", &cfgTime) && !usingStaticWallpaper) {
-    if(cfgTime < MIN_FRAME_TIME) {
+  if(! params_args.hasFrameTime &&
+     config_lookup_float(&cfg, "time", &params_config.frameTime) &&
+     !usingStaticWallpaper) {
+    if(params_config.frameTime < MIN_FRAME_TIME) {
       log_error("Time cannot be less than %lf.", MIN_FRAME_TIME);
-      exit(1);
+      exit(EXIT_FAILURE);
     }
-    frameTime = cfgTime;
 
-      log_debug("frameTime: %lf", frameTime);
+    log_debug("frameTime: %lf", frameTime);
+    params_config.hasFrameTime = true;
   }
-  else if(! usingStaticWallpaper)
+  else if(! usingStaticWallpaper) {
+    params_config.hasFrameTime = false;
     log_warn("No 'time' setting in configuration file. Using default '0.07' seconds as time parameter.");
+  }
 
-  if(config_lookup_bool(&cfg, "fit", &cfgFit) && !hasArgFit && !usingStaticWallpaper) {
-    hasConfFit = cfgFit;
+  if(config_lookup_string(&cfg, "fit", &tmp_cfg_str) &&
+     !params_args.hasFitOpt &&
+     !usingStaticWallpaper) {
+    params_config.fitOpt = fit_atoe(tmp_cfg_str);
+    params_config.hasFitOpt = true;
+  } else {
+    params_config.hasFitOpt = false;
   }
 
   config_destroy(&cfg);
 
-
-    log_debug("Loading images ...");
+  log_debug("Loading images ...");
 
   int fileOffset = 0;
 
@@ -333,7 +345,7 @@ void term_handler(int signum) {
   exit(EXIT_SUCCESS);
 }
 
-void getImgCount(char str[PATH_MAX]) {
+void getImgCount(const char str[PATH_MAX]) {
   /* This function gets the string of the directory where the images exist and
    * counts every image. argORcout is to know if pImgCount should point to
    * the argument img count variable or configuration count variable.       */
@@ -359,22 +371,7 @@ void getImgCount(char str[PATH_MAX]) {
   }
 }
 
-static int compare_fun (const void *p, const void *q) {
-  /* compare_fun() and some code from getImgPath() from
-   * https://www.linuxquestions.org/questions/programming-9/how-to-list-and-sort-files-in-some-directory-by-the-names-on-linux-win-in-c-4175555160/
-   * by NevemTeve - Thank you NevemTeve
-   * This function is mandatory for qsort to be able to know
-   * what approach to use to sort the images              */
-
-  const char *l = *(const char**)p;
-  const char *r = *(const char**)q;
-  int cmp;
-
-  cmp = strcmp(l, r);
-  return cmp;
-}
-
-void getImgPath(char str[PATH_MAX], int choice) {
+void getImgPath(const char str[PATH_MAX]) {
   /* This function serves for saving the images paths from a
    * choosen directory to a dynamically allocated array of
    * pointers, pointers pointing to the string of path
@@ -394,16 +391,6 @@ void getImgPath(char str[PATH_MAX], int choice) {
    * statements are used to know if the first 1-2 files
    * are or not . and ..                                  */
 
-   {
-    switch(choice) {
-      case 0:
-        log_debug("Using \"%s\" from configuration file.", str);
-        break;
-      case 1:
-        log_debug("Using user arguments for configurations.", str);
-        break;
-    }
-  }
   imgPath = (char**)malloc(imgCount * sizeof(char*));
 
   DIR *d;
@@ -417,13 +404,13 @@ void getImgPath(char str[PATH_MAX], int choice) {
 
     /* Check if this str path ends with '/' */
     size_t str_len = strlen(str);
-    if(str[str_len - 1 ] != '/') {
-      if(str_len < PATH_MAX)
-        str[str_len] = '/';
-      else {
-        log_error("Animation path is too big and exceedes system's maximum path length: %d characters long", PATH_MAX);
-      }
-    }
+    //if(str[str_len - 1 ] != '/') {
+    //  if(str_len < PATH_MAX)
+    //    str[str_len] = '/';
+    //  else {
+    //    log_error("Animation path is too big and exceedes system's maximum path length: %d characters long", PATH_MAX);
+    //  }
+    //}
 
     while((dir = readdir(d)) != NULL) {
       (imgPath)[temp] = (char*)malloc(PATH_MAX * sizeof(char));
@@ -482,7 +469,7 @@ void freeUsingPath(void) {
     free(imgPath);
 }
 
-void setRootAtoms(Display *display, Monitor *monitor) {
+void setRootAtoms(Display *restrict display, Monitor *restrict monitor) {
   /* This function should clear and load the images to
    * X11 screen.                                    */
 

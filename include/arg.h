@@ -27,9 +27,10 @@ typedef struct params {
     /*** VALUES ***/
     char imDirPath[PATH_MAX];       /* Path to images directory */
     char confPath[PATH_MAX];        /* Path to configuration file to use */
-    double frameTime;               /* Time between frames */
+    double frameTime;                     /* Time between frames */
     char staticWallpaper[PATH_MAX]; /* Path to static wallpaper */
-    uint8_t fitOpt;                 /* The final fit option */ //TODO: Create an enum for each fit option, instead of chars (oawp.h)
+    int fitOpt;                           /* The fit option */
+    int debug;
 
     /*** BOOLEANS of value existence ***/
     bool hasImDirPath;              /* If true, this type has a directory value */
@@ -37,9 +38,10 @@ typedef struct params {
     bool hasFrameTime;              /* If true, this type has a time value */
     bool hasStaticWallpaper;        /* If true, this type has a StaticWallpaper value */
     bool hasFitOpt;                 /* If true, this type has a Fit option value */
+    bool hasDebug;
 } params_t;
 
 
-uint8_t argGetOpt(int argc, char **argv, params_t *parameters);
+uint8_t argGetOpt(const int argc, const char **argv, params_t *restrict parameters);
 
 #endif // __ARG_H__

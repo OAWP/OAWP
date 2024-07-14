@@ -24,8 +24,15 @@
 #include "fancy-text.h"
 #include "info.h"
 #include "oawp.h"
+#include "log.h"
 
-void puts_logo(uint8_t logo) {
+static bool isExecutable(const char *restrict executable) {
+    char command[1024];
+    snprintf(command, sizeof(command), "which %s > /dev/null 2>&1", executable);
+    return (system(command) == 0);
+}
+
+void puts_logo(const uint8_t logo) {
   
   /* File to pipe to the *AWP output */
   FILE *rainbowPipe = stdout;
@@ -43,30 +50,32 @@ void puts_logo(uint8_t logo) {
   
   bool isToCloseFile = true;
   
-  if (access("lcat-rs", X_OK) == 0) {
-    if(_DEBUG)
-      fprintf(stdout, DEBUG_TEXT_PUTS": `lcat-rs' found in the system, opting for it to print *AWP logo");
+
+  if (isExecutable("lcat-rs")) {
+  //if (access("lcat-rs", X_OK) == 0) {
+    log_debug("`lcat-rs' found in the system, opting for it to print *AWP logo");
     
     rainbowPipe = popen("lcat-rs", "w");
     /* lcat-rs by `davidkna' - <https://github.com/davidkna/lcat-rs> */
   }
-  else if (access("roflcat", X_OK) == 0) {
-    if(_DEBUG)
-      fprintf(stdout, DEBUG_TEXT_PUTS": `roflcat' found in the system, opting for it to print *AWP logo");
+
+  else if (isExecutable("roflcat")) {
+  //else if (access("roflcat", X_OK) == 0) {
+    log_debug("`roflcat' found in the system, opting for it to print *AWP logo");
     
     rainbowPipe = popen("roflcat", "w");
     /* roflcat by `jameslzhu' - <https://github.com/jameslzhu/roflcat> */
   }
-  else if (access("lolcat", X_OK) == 0) {
-    if(_DEBUG)
-      fprintf(stdout, DEBUG_TEXT_PUTS": `lolcat' found in the system, opting for it to print *AWP logo");
+
+  else if (isExecutable("lolcat")) {
+  //else if (access("lolcat", X_OK) == 0) {
+    log_debug("`lolcat' found in the system, opting for it to print *AWP logo");
     
     rainbowPipe = popen("lolcat", "w");
     /* lolcat by `busyloop' - <https://github.com/busyloop/lolcat> */
   }
   else {
-    if(_DEBUG)
-      fprintf(stdout, DEBUG_TEXT_PUTS": No rainbow text manipulator found in the system, printing raw *AWP logo");
+    log_debug("No rainbow text manipulator found in the system, printing raw *AWP logo");
     rainbowPipe = stdout;
     isToCloseFile = false;
   }
@@ -86,6 +95,7 @@ void puts_logo(uint8_t logo) {
               KBCYN"|  $$$$$$/" KBLU"| $$  | $$" KMAG"| $$/   \\  $$" KBGRN"| $$"RST"\n"
               KBCYN" \\______/ " KBLU"|__/  |__/" KMAG"|__/     \\__/" KBGRN"|__/"RST"\n"
       );
+      break;
 
 #ifdef __APPLE__
     case logo_mawp:
@@ -101,6 +111,7 @@ void puts_logo(uint8_t logo) {
               "| $$ \\/  | $$" "| $$  | $$" "| $$/   \\  $$" "| $$""\n"
               "|__/     |__/" "|__/  |__/" "|__/     \\__/" "|__/"RST"\n"
       );
+      break;
 
 #elif _WIN32
       
@@ -116,6 +127,7 @@ void puts_logo(uint8_t logo) {
               KBCYN"| $$/   \\  $$" "| $$" "| $$  | $$" KBWHT"| $$  | $$" "| $$/   \\  $$" "| $$"RST"\n"
               KBCYN"|__/     \\__/" "|__/" "|__/  |__/" KBWHT"|__/  |__/" "|__/     \\__/" "|__/"RST"\n"
       );
+      break;
 
 #else
       
@@ -131,31 +143,28 @@ void puts_logo(uint8_t logo) {
               KYEL"| $$  \\ $$"  KRED"| $$  | $$"  KMAG"| $$/   \\  $$"  KBCYN"| $$      "  RST"\n"
               KYEL"|__/  |__/"  KRED"|__/  |__/"  KMAG"|__/     \\__/"  KBCYN"|__/      "  RST"\n"
       );
+      break;
      
     case logo_wawp:
       /* Outputs WAWP ascii logo without gradient */
       fprintf(rainbowPipe, "\n" /* print logo */
               /* KBYEL "\033[103m" - Yellow background, white foreground */
-              KBYEL BBYEL " /$$      /$$" "  /$$$$$$ " " /$$      /$$" " /$$$$$$$ "RST"\n"
-              KBYEL BBYEL "| $$  /$ | $$" " /$$__  $$" "| $$  /$ | $$" "| $$__  $$"RST"\n"
-              KBYEL BBYEL "| $$ /$$$| $$" "| $$  \\ $$" "| $$ /$$$| $$" "| $$  \\ $$"RST"\n"
-              KBYEL BBYEL "| $$/$$ $$ $$" "| $$$$$$$$" "| $$/$$ $$ $$" "| $$$$$$$/"RST"\n"
-              KBYEL BBYEL "| $$$$_  $$$$" "| $$__  $$" "| $$$$_  $$$$" "| $$____/ "RST"\n"
-              KBYEL BBYEL "| $$$/ \\  $$$" "| $$  | $$" "| $$$/ \\  $$$" "| $$      "RST"\n"
-              KBYEL BBYEL "| $$/   \\  $$" "| $$  | $$" "| $$/   \\  $$" "| $$      "RST"\n"
-              KBYEL BBYEL "|__/     \\__/" "|__/  |__/" "|__/     \\__/" "|__/      "RST"\n"
+              KBWHT BBYEL " /$$      /$$" "  /$$$$$$ " " /$$      /$$" " /$$$$$$$ "RST"\n"
+              KBWHT BBYEL "| $$  /$ | $$" " /$$__  $$" "| $$  /$ | $$" "| $$__  $$"RST"\n"
+              KBWHT BBYEL "| $$ /$$$| $$" "| $$  \\ $$" "| $$ /$$$| $$" "| $$  \\ $$"RST"\n"
+              KBWHT BBYEL "| $$/$$ $$ $$" "| $$$$$$$$" "| $$/$$ $$ $$" "| $$$$$$$/"RST"\n"
+              KBWHT BBYEL "| $$$$_  $$$$" "| $$__  $$" "| $$$$_  $$$$" "| $$____/ "RST"\n"
+              KBWHT BBYEL "| $$$/ \\  $$$" "| $$  | $$" "| $$$/ \\  $$$" "| $$      "RST"\n"
+              KBWHT BBYEL "| $$/   \\  $$" "| $$  | $$" "| $$/   \\  $$" "| $$      "RST"\n"
+              KBWHT BBYEL "|__/     \\__/" "|__/  |__/" "|__/     \\__/" "|__/      "RST"\n"
       );
+      break;
 
 #endif
   }
 
-  /* After printing the logo, print the title and version as well */
-  printf(KBWHT "Open Animated Wallpaper Player v%s\n\n" RST, __VERSION_STR);
-
-  /* Fush the rainbow pipe file and close it unless it's stdout */
-  fflush(rainbowPipe);
-
 #ifndef _WIN32
+
   /*
    * This is valid only if a rainbowPipe exists, therefore this should run only
    * on *nix operating systems as non-*nix OS'es won't have anything else than
@@ -167,6 +176,13 @@ void puts_logo(uint8_t logo) {
   if(isToCloseFile)
     pclose(rainbowPipe);
 #endif /* _WIN32 */
+
+  /* Fush the rainbow pipe file and close it unless it's stdout */
+  fflush(rainbowPipe);
+
+  /* After printing the logo, print the title and version as well */
+  fprintf(stdout, KBWHT"Open Animated Wallpaper Player v%s"RST"\n\n", __VERSION_STR);
+
 
 
   /* ASCII art:
@@ -232,7 +248,7 @@ void puts_logo(uint8_t logo) {
    * #-> (end comments)                                           */
 }
 
-void puts_logo_auto() {
+void puts_logo_auto(void) {
 #ifdef __APPLE__
   puts_logo(logo_mawp);
 
@@ -241,10 +257,10 @@ void puts_logo_auto() {
 
 #else
   if (getenv("DISPLAY") == NULL) {
-    // fprintf(stderr, ERR_TEXT_PUTS": Couldn't find any active display.");
+    log_info("Couldn't find any active display.");
     puts_logo(logo_oawp);
     return;
-  } else if (getenv("DISPLAY_WAYLAND") == NULL) {
+  } else if (getenv("DISPLAY_WAYLAND") != NULL) {
     puts_logo(logo_wawp);
     return;
   }
