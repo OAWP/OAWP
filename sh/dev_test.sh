@@ -24,7 +24,7 @@
 ########################################################################
 
 # Configure project and build it
-. ./dev_build.sh
+. ./sh/dev_build.sh
 
 # Run unit tests
 cmake_test

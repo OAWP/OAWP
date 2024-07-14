@@ -51,20 +51,20 @@ uncolor_sequence() {
 log_info() {
     message="$1"
     timestamp="$(date +'%Y-%m-%d %H:%M:%S')"
-    printf "%s %s: %s\n" "${INFO}" "${timestamp}" "${message}"
-    printf "%s %s: %s\n" "${INFO}" "${timestamp}" "${message}" | uncolor_sequence >> "${LOG_FILE}"
+    printf "%b %b: %b\n" "${INFO}" "${timestamp}" "${message}"
+    printf "%b %b: %b\n" "${INFO}" "${timestamp}" "${message}" | uncolor_sequence >> "${LOG_FILE}"
 }
 
 log_warn() {
     message="$1"
     timestamp="$(date +'%Y-%m-%d %H:%M:%S')"
-    printf "%s %s: %s\n" "${WARN}" "${timestamp}" "${message}"
-    printf "%s %s: %s\n" "${WARN}" "${timestamp}" "${message}" | uncolor_sequence >> "${LOG_FILE}"
+    printf "%b %b: %b\n" "${WARN}" "${timestamp}" "${message}"
+    printf "%b %b: %b\n" "${WARN}" "${timestamp}" "${message}" | uncolor_sequence >> "${LOG_FILE}"
 }
 
 log_err() {
     message="$1"
     timestamp="$(date +'%Y-%m-%d %H:%M:%S')"
-    printf "%s %s: %s\n" "${ERR}" "${timestamp}" "${message}" >&2
-    printf "%s %s: %s\n" "${ERR}" "${timestamp}" "${message}" | uncolor_sequence >> "${LOG_FILE}"
+    printf "%b %b: %b\n" "${ERR}" "${timestamp}" "${message}" >&2
+    printf "%b %b: %b\n" "${ERR}" "${timestamp}" "${message}" | uncolor_sequence >> "${LOG_FILE}"
 }

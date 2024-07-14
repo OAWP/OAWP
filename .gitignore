@@ -5,3 +5,4 @@ XAWP.wiki/
 Makefile
 /.cache/clangd
 /Testing/
+logfile.log

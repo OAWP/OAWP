@@ -30,7 +30,7 @@
 : "${CMAKE_BUILD_TYPE:="Debug"}"
 
 # SOURCE
-. ./cmake.sh
+. ./sh/cmake.sh
 
 # Configure project
 cmake_init

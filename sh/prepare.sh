@@ -24,9 +24,9 @@
 ########################################################################
 
 # SOURCE
-. ./logging.sh
-. ./cmake.sh
-. ./chkroot.sh # Check for ROOT id
+. ./sh/logging.sh
+. ./sh/cmake.sh
+. ./sh/chkroot.sh # Check for ROOT id
 
 # Basic global variables
 PKG_MGR=""          # The package manager that will install the dependencies
@@ -118,7 +118,7 @@ pkgmgr_finder() {
   elif [ -x "$(command -v emerge)" ]; then
     log_err "Portage detected!"
     log_err "Automatic package instalation with portage may lead to package conflicts."
-    log_err "Please install ${DEPENDENCIES} manually and run this file again to compile and install XAWP in your system!"
+    log_err "Please install ${GREEN}${DEPENDENCIES}${ENDCOLOR} manually and run this file again to compile and install OAWP in your system!"
     log_err "To install these dependencies, try \"sudo emerge --ask ${DEPENDENCIES}\"."
     log_err "For more info, see <https://wiki.gentoo.org/wiki/Emerge> and <https://wiki.gentoo.org/wiki/Portage>."
     exit 1
