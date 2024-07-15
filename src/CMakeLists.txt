@@ -55,7 +55,7 @@ endforeach()
 target_link_libraries("${PROJECT_NAME}"
   "${IMLIB2_LINK_LIBRARIES}"
   "${LIBPCRE_LINK_LIBRARIES}"
-  "${LIBCONFIG_LIBRARIES}"
+  "${LIBCONFIG_LINK_LIBRARIES}"
   "${X11_LIBRARIES}"
   "${MATH_LIBRARY}"
 )
