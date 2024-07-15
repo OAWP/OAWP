@@ -43,8 +43,7 @@ include(AddGitHash)
 add_git_hash()
 
 # Set default build type
-#set(default_build_type "Release")
-set(default_build_type "Debug")
+set(default_build_type "Release")
 
 # If default build type
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -118,7 +117,12 @@ endif (DOXYGEN_FOUND)
 #### INSTALL ####
 #---------------#
 
-install(CODE "message(\"Install step does nothing yet\")")
+# Install target
+install(TARGETS "${PROJECT_NAME}")
+
+# Install config file
+set(SCRIPT_CONFIG_INSTALL_PATH "${CMAKE_SOURCE_DIR}/sh/setup_user_config.sh")
+install(CODE "execute_process(COMMAND ${SCRIPT_CONFIG_INSTALL_PATH})")
 
 #### TESTING ####
 #---------------#

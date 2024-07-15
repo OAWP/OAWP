@@ -23,17 +23,42 @@
 #                                                                      #
 ########################################################################
 
-# Default variables
-#: "${CMAKE_BINARY_DIR:=$(mktemp --directory)}"
-: "${CMAKE_BINARY_DIR:="./build"}"
-: "${CMAKE_SOURCE_DIR:="./src/"}"
-: "${CMAKE_BUILD_TYPE:="Debug"}"
-
 # SOURCE
-. ./sh/cmake.sh
+. ./sh/chkroot.sh
+. ./sh/logging.sh
 
-# Configure project
-cmake_init
+# CONSTANTS
+OAWP_CONFIG_DIR="./assets/.config/oawp/"
 
-# Build the project with all threads
-cmake_build
+# Function to create .config directory for a user
+create_config_dir() {
+  username=${1}
+  home_dir=$(eval echo "~${username}")
+  config_dir="${home_dir}/.config/"
+
+  if [ -d "${home_dir}" ] && [ ! -d "${config_dir}" ]; then
+    mkdir -p "${config_dir}"
+    chown "${username}:${username}" "${config_dir}"
+    log_info "Created \`${config_dir}' for user \`${username}'."
+  fi
+
+  cp -r "${OAWP_CONFIG_DIR}" "${config_dir}"
+  chown -R "${username}:${username}" "${config_dir}$(basename ${OAWP_CONFIG_DIR})"
+  log_info "Copied OAWP config directory for user \`${username}'."
+}
+
+# Iterate over each user in /etc/passwd
+while IFS=: read -r username _ uid _ home_dir _; do
+
+  if [ "$(uname)" = "Darwin" ]; then
+      # macOS normal users start from 501
+      if [ "${uid}" -ge 501 ]; then
+          create_config_dir "${username}"
+      fi
+  else
+      if [ "${uid}" -ge 1000 ]; then
+          create_config_dir "${username}"
+      fi
+  fi
+
+done < /etc/passwd
