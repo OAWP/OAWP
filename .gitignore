@@ -6,3 +6,4 @@ Makefile
 /.cache/clangd
 /Testing/
 logfile.log
+logfile.txt
