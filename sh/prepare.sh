@@ -154,22 +154,22 @@ pkgmgr_finder() {
 pkgmgr_install() {
   # Install dependencies
   if [ "${PKG_MGR}" = "apt-get" ]; then
-    "${PKG_MGR}" install -y "${DEB_DEPENDENCIES}"
+    "${PKG_MGR}" install -y ${DEB_DEPENDENCIES}
   ## Arch
   elif [ "${PKG_MGR}" = "pacman" ]; then
-    "${PKG_MGR}" -Sy --noconfirm "${DEPENDENCIES}"
+    "${PKG_MGR}" -Sy --noconfirm ${DEPENDENCIES}
   ## RedHat
   elif [ "${PKG_MGR}" = "dnf" ]; then
-    "${PKG_MGR}" install -y "${RPM_DEPENDENCIES}"
+    "${PKG_MGR}" install -y ${RPM_DEPENDENCIES}
   ## FreeBSD
   elif [ "${PKG_MGR}" = "pkg" ]; then
-    "${PKG_MGR}" install -y "${BSD_DEPENDENCIES}"
+    "${PKG_MGR}" install -y ${BSD_DEPENDENCIES}
   ## OpenBSD
   elif [ "${PKG_MGR}" = "pkg_add" ]; then
-    "${PKG_MGR}" "${BSD_DEPENDENCIES}"
+    "${PKG_MGR}" ${BSD_DEPENDENCIES}
   ## NetBSD
   elif [ "${PKG_MGR}" = "pkgin" ]; then
-    "${PKG_MGR}" -y install "${BSD_DEPENDENCIES}"
+    "${PKG_MGR}" -y install ${BSD_DEPENDENCIES}
   fi
   EXIT_CODE=${?}
 
