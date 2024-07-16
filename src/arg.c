@@ -22,6 +22,7 @@
 #include <unistd.h>
 #include <string.h>
 
+#include "dir-handler.h"
 #include "fancy-text.h"
 #include "arg.h"
 #include "oawp.h"
@@ -95,8 +96,12 @@ uint8_t argGetOpt(const int argc, const char **argv, params_t *restrict paramete
                 /* directory */
             case 'd':
                 strcpy((char*)parameters->imDirPath, optarg);
-                getImgCount(parameters->imDirPath);
-                getImgPath(parameters->imDirPath);
+
+                impaths_t a;
+                imPathsInit(&a);
+                getImgPath(parameters->imDirPath, &a);
+                //getImgCount(parameters->imDirPath);
+                //getImgPath(parameters->imDirPath);
                 parameters->hasImDirPath = true;
                 break;
 
@@ -117,7 +122,7 @@ uint8_t argGetOpt(const int argc, const char **argv, params_t *restrict paramete
                 /* set-static-wallpaper */
             case 'S':
                 if(access(optarg, F_OK) != 0) {
-                    log_error("%s from 'static-wallpaper' does not exists.", optarg);
+                    log_error("%s from 'static-wallpaper' does not exist.", optarg);
                     exit(1);
                 }
                 if(access(optarg, R_OK) != 0) {

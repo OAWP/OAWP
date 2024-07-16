@@ -28,11 +28,12 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY
 # Set main executable source files
 set("${PROJECT_NAME}_SRC"
   arg.c
-  dir-checker.c
+  dir-handler.c
   fancy-text.c
   log.c
   oawp.c
   pixmanip.c
+  sig-handlers.c
 )
 
 add_executable("${PROJECT_NAME}"

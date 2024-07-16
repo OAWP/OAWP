@@ -21,7 +21,7 @@
 
 #include <stdbool.h>
 #include <Imlib2.h>
-#include "dir-checker.h"
+#include "dir-handler.h"
 
 #ifndef _POSIX_C_SOURCE
 # define _POSIX_C_SOURCE 199309L
@@ -73,10 +73,6 @@ typedef struct {
 void help(void);
 void version(void);
 
-void term_handler(const int signum);
-
-void getImgCount(const char str[PATH_MAX]);
-void getImgPath(const char str[PATH_MAX]);
 void freeUsingPath(void);
 void setRootAtoms(Display *restrict display, Monitor *restrict monitor);
 void ImFit(Imlib_Image *image[]);

@@ -17,8 +17,8 @@
  * along with OAWP. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __DIR_CHECKER_H__
-# define __DIR_CHECKER_H__
+#ifndef __DIR_HANDLER_H__
+# define __DIR_HANDLER_H__
 
 #include <stdint.h>
 
@@ -34,10 +34,20 @@
   #elif _WIN32
     #include <windef.h>
       #define PATH_MAX MAX_PATH
-    #endif // MAX_PATH (windows)
-  #endif // _WIN32
+  #endif // __linux__
 #endif // PATH_MAX
 
+
+/// Contains paths for all the images to render
+typedef struct impaths {
+  uint64_t image_count; // Number of images
+  struct charlist {
+    char im_path[PATH_MAX];
+    struct charlist* next_p;
+  } *list;
+  struct charlist *index;
+  struct charlist *end;
+} impaths_t;
 
 /**
  * @brief Check if the first character is a '~'.
@@ -64,4 +74,18 @@ uint8_t formatPath(const char *restrict path, char formatted_path[PATH_MAX]);
  */
 uint8_t verifyDirPath(const char path[PATH_MAX]);
 
-int compare_fun (const void *restrict p, const void *restrict q);
+static int compareFun (const void *restrict p, const void *restrict q);
+
+// DEPRECATED
+//uint8_t getImgCount(const char str[PATH_MAX], uint64_t *restrict img_count);
+
+uint8_t getImgPath(const char str[PATH_MAX], impaths_t *restrict im_paths);
+
+uint8_t imPathsInit(impaths_t *restrict im_paths);
+uint8_t imPathsIndexReset(impaths_t *restrict im_paths);
+uint8_t imPathsPush(const char *restrict str, impaths_t *restrict im_paths);
+uint8_t imPathsNext(impaths_t *restrict im_paths);
+uint8_t ImPathsSort(impaths_t *restrict im_paths);
+uint8_t imPathsFree(impaths_t *restrict im_paths);
+
+#endif // __DIR_CHECKER_H__

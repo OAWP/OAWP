@@ -29,9 +29,6 @@
 /* Config */
 #include <libconfig.h>
 
-/* For locating paths and files */
-#include <dirent.h>
-
 /* Basic programming */
 #include <math.h>
 #include <stdbool.h>
@@ -45,11 +42,12 @@
 /* OAWP created headers */
 #include "fancy-text.h"
 #include "info.h"
-#include "dir-checker.h"
+#include "dir-handler.h"
 #include "oawp.h"
 #include "arg.h"
 #include "log.h"
 #include "pixmanip.h"
+#include "sig-handlers.h"
 
 /* == DEFAULT PARAMETERS == */
 
@@ -86,18 +84,19 @@ bool usingStaticWallpaper = false;         /* If true, OAWP will run only once t
 //bool hasConfFit = false;                   /* If true, the fit option from configuration file will be used - Order 1 */
 //char defaultFitOpt[] = DEFAULT_FIT_OPTION; /* Default Fit Option - Order 2 */ //TODO: use enums
 //char *fitOpt;                              /* The final fit option */
-
-/* Miscellaneous variables */
-bool hasCurrentDir = false;       /* If true, the directory containing images has a current directory file: ./ */
-bool hasParentDir = false;        /* If true, the directory containing images has a parent directory file: ../ */
+//
+//impaths_t* im_paths_conf;
+//impaths_t* im_paths_arg;
+impaths_t im_paths_conf;
+impaths_t im_paths_arg;
 
 int main(int argc, char *argv[]) {
 
   /* == Initialize everything before running anything meaningful == */
 
   /* Set up a handler for the SIGTERM and SIGINT signal */
-  signal(SIGTERM, term_handler);
-  signal(SIGINT, term_handler);
+  signal(SIGTERM, termHandler);
+  signal(SIGINT, termHandler);
 
   // TODO LOGGER
   FILE *log_file = fopen("logfile.txt", "a");
@@ -113,8 +112,16 @@ int main(int argc, char *argv[]) {
   /* Format the path from relative to absolute */
   formatPath(DEFAULT_CONFIG_FILE_PATH, defaultConfigFilePath);
 
+  //TODO: Free these
+  //im_paths_arg = (impaths_t*)malloc(sizeof(impaths_t));
+  //im_paths_conf = (impaths_t*)malloc(sizeof(impaths_t));
+ 
+  imPathsInit(&im_paths_arg);
+  imPathsInit(&im_paths_conf);
+
   params_t params_args;
   params_t params_config;
+
   if (argGetOpt(argc, (const char**)argv, &params_args)) {
     log_error("Something went wrong with argument parsing.");
     exit(EXIT_FAILURE);
@@ -173,15 +180,16 @@ int main(int argc, char *argv[]) {
   }
 
   if(params_args.hasImDirPath && !usingStaticWallpaper) {
-    getImgCount(params_args.imDirPath);
-    getImgPath(params_args.imDirPath);
+    getImgPath(params_args.imDirPath, &im_paths_arg);
   }
   else if(!params_args.hasImDirPath &&
           config_lookup_string(&cfg, "path", &tmp_cfg_str) &&
           !usingStaticWallpaper) {
     strcpy(params_config.imDirPath, tmp_cfg_str);
-    getImgCount(params_config.imDirPath); //TODO: Do that somewhere else
-    getImgPath(params_config.imDirPath);  //TODO: Do that somewhere else
+
+    getImgPath(params_args.imDirPath, &im_paths_arg);
+    //getImgCount(params_config.imDirPath); //TODO: Do that somewhere else
+    //getImgPath(params_config.imDirPath);  //TODO: Do that somewhere else
   }
   else if(! usingStaticWallpaper) {
     log_error("No 'path' setting in configuration file.");
@@ -217,19 +225,25 @@ int main(int argc, char *argv[]) {
 
   log_debug("Loading images ...");
 
-  int fileOffset = 0;
+  // TODO: Remove any fileOffset
+  //int fileOffset = 0;
 
-  if(hasCurrentDir)
-    fileOffset++;
-  if(hasParentDir)
-    fileOffset++;
+  //if(hasCurrentDir)
+  //  fileOffset++;
+  //if(hasParentDir)
+  //  fileOffset++;
 
   // Loading Images to ImLib
-  Imlib_Image images[imgCount-fileOffset];
+  //Imlib_Image images[imgCount-fileOffset];
+  //if(!usingStaticWallpaper) {
+  //  for(int temp = 0; temp < imgCount - fileOffset; temp++) {
+  //    images[temp] = imlib_load_image(imgPath[(fileOffset+temp)]);
+  //    log_debug("Imlib loaded %s", (imgPath)[(fileOffset+temp)]);
+  Imlib_Image images[imgCount];
   if(!usingStaticWallpaper) {
-    for(int temp = 0; temp < imgCount - fileOffset; temp++) {
-      images[temp] = imlib_load_image(imgPath[(fileOffset+temp)]);
-      log_debug("Imlib loaded %s", (imgPath)[(fileOffset+temp)]);
+    for(int temp = 0; temp < imgCount; temp++) {
+      images[temp] = imlib_load_image(imgPath[(temp)]);
+      log_debug("Imlib loaded %s", (imgPath)[(temp)]);
     }
     log_debug("");
   }
@@ -303,7 +317,9 @@ int main(int argc, char *argv[]) {
   timeout.tv_nsec = time_nsec_raw * 1e9;
 
   while(1) {
-    for(int cycle = 0; cycle < imgCount - fileOffset; ++cycle) {
+    // TODO: remove fileoffset
+    //for(int cycle = 0; cycle < imgCount - fileOffset; ++cycle) {
+    for(int cycle = 0; cycle < imgCount; ++cycle) {
       Imlib_Image current = images[cycle % imgCount];
       for(int monitor = 0; monitor < screen_count; ++monitor) {
         Monitor *c_monitor = &monitors[monitor];
@@ -332,126 +348,6 @@ int main(int argc, char *argv[]) {
       nanosleep(&timeout, NULL);
     }
   }
-}
-
-
-void term_handler(int signum) {
-
-  /* When receiving a SIGTERM or SIGINT, this function will exit gracefully
-   * with an informative quit message to the user. */
-
-  log_info("Quiting...");
-
-  exit(EXIT_SUCCESS);
-}
-
-void getImgCount(const char str[PATH_MAX]) {
-  /* This function gets the string of the directory where the images exist and
-   * counts every image. argORcout is to know if pImgCount should point to
-   * the argument img count variable or configuration count variable.       */
-  imgCount = 0;
-
-  if(access(str, F_OK) != 0) {
-    log_error("%s from 'path' does not exists.", str);
-    exit(1);
-  }
-  if(access(str, R_OK) != 0) {
-    log_error("%s from 'path' cannot be read. Please check the file permissions.", str);
-    exit(1);
-  }
-
-  DIR *d;
-  struct dirent *dir;
-  int i = 0;
-  d = opendir(str);
-  if(d) {
-    while ((dir = readdir(d)) != NULL)
-      imgCount++;
-    closedir(d);
-  }
-}
-
-void getImgPath(const char str[PATH_MAX]) {
-  /* This function serves for saving the images paths from a
-   * choosen directory to a dynamically allocated array of
-   * pointers, pointers pointing to the string of path
-   * I choosed this way because a normal initialized array
-   * would use much more memory, Imlib uses a lot of memory
-   * anyway.
-   *
-   * Just like getImgCount(), getImgPath() gets choice
-   * which is used to know where pImgCount and pImgPath
-   * should point to: argument or configuration file
-   *
-   * readdir() mixes up the files order, so qsort is used
-   *
-   * Most partitions have their first files as . and ..,
-   * current directory and previous directory respectively
-   * which shouldn't be part of the image loading, so if
-   * statements are used to know if the first 1-2 files
-   * are or not . and ..                                  */
-
-  imgPath = (char**)malloc(imgCount * sizeof(char*));
-
-  DIR *d;
-  struct dirent *dir;
-
-  d = opendir(str);
-
-  int temp = 0;
-
-  if(d) {
-
-    /* Check if this str path ends with '/' */
-    size_t str_len = strlen(str);
-    //if(str[str_len - 1 ] != '/') {
-    //  if(str_len < PATH_MAX)
-    //    str[str_len] = '/';
-    //  else {
-    //    log_error("Animation path is too big and exceedes system's maximum path length: %d characters long", PATH_MAX);
-    //  }
-    //}
-
-    while((dir = readdir(d)) != NULL) {
-      (imgPath)[temp] = (char*)malloc(PATH_MAX * sizeof(char));
-      strcpy((imgPath)[temp], str);
-      strcat((imgPath)[temp++], dir->d_name);
-    }
-    closedir(d);
-  }
-
-    /* readdir() dumps mixed files, so qsort will sort alphabetically */
-    qsort(imgPath, imgCount, sizeof((imgPath)[0]), compare_fun);
-
-    /* Prints all the selected files */
-    log_debug("Selected files:");
-    for(int i = 0; i < imgCount; i++)
-      log_debug("  | File %d: %s", i, (imgPath)[i]);
-    log_debug(  "  | ** End of files **\n");
-
-    /* Now check if there are any "." and ".." files in path
-     * in order to know where the actual images start     */
-    char tempImgPath1dot[PATH_MAX];
-    strcpy(tempImgPath1dot, str);
-    strcat(tempImgPath1dot, ".");
-    if(strcmp((imgPath)[0], tempImgPath1dot) == 0) {
-      hasCurrentDir = true;
-
-        log_debug("\"%s\" has current directory file, skipping it.", str);
-    }
-    else
-      hasCurrentDir = false;
-
-    char tempImgPath2dot[PATH_MAX];
-    strcpy(tempImgPath2dot, str);
-    strcat(tempImgPath2dot, "..");
-    if(strcmp((imgPath)[1], tempImgPath2dot) == 0) {
-      hasParentDir = true;
-
-        log_debug("\"%s\" has parent directory file, skipping it.", str);
-    }
-    else
-      hasParentDir = false;
 }
 
 void freeUsingPath(void) {
