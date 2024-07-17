@@ -26,72 +26,72 @@
 #include "pixmanip.h"
 #include "log.h"
 
-void setFitOpts(int *restrict currentOptions, const int newOption) {
+static void set_fit_opts(int *restrict current_options, const int new_option) {
 
     // Check position flag conflicts
-    if (newOption & POSITION_MASK) {
+    if (new_option & POSITION_MASK) {
         log_error("Cannot use multiple positions at the same time!\n"
                   "Please make sure fit is configured correctly!");
         exit(EXIT_FAILURE);
     }
     // Check modifier flag conflicts
-    if (newOption & FIT_MASK) {
+    if (new_option & FIT_MASK) {
         log_error("Cannot use multiple modifiers at the same time!\n"
                   "Please make sure fit is configured correctly!");
         exit(EXIT_FAILURE);
     }
 
     // Set the new option
-    *currentOptions |= newOption;
+    *current_options |= new_option;
 }
 
-int fit_atoe(const char *restrict fitOptStr) {
+int fit_atoe(const char *restrict fit_opt_str) {
 
-    int fitOpts = 0;
+    int fit_opts = 0;
     char *token;
-    char strCopy[256];
+    char str_copy[256];
 
     /* Create a copy of the input string since strtok modifies the string */
-    strncpy(strCopy, fitOptStr, sizeof(strCopy));
-    strCopy[sizeof(strCopy) - 1] = '\0';
+    strncpy(str_copy, fit_opt_str, sizeof(str_copy));
+    str_copy[sizeof(str_copy) - 1] = '\0';
 
     /* Uppercase every char of fitOpt */
-    for (uint32_t temp = 0; temp < strlen(strCopy); temp++)
-        strCopy[temp] = toupper(strCopy[temp]);
+    for (uint32_t temp = 0; temp < strlen(str_copy); temp++)
+        str_copy[temp] = toupper(str_copy[temp]);
 
     /* Tokenize the input string using space and comma as delimiters */
-    token = strtok(strCopy, " ,");
+    token = strtok(str_copy, " ,");
     while (token != NULL) {
         if (strcmp(token, "FULLSCREEN") == 0) {
-            setFitOpts(&fitOpts, _FIT_FULLSCREEN);
+            set_fit_opts(&fit_opts, _FIT_FULLSCREEN);
         } else if (strcmp(token, "CENTERED") == 0) {
-            setFitOpts(&fitOpts, _FIT_CENTERED);
+            set_fit_opts(&fit_opts, _FIT_CENTERED);
         } else if (strcmp(token, "TOP-LEFT") == 0) {
-            setFitOpts(&fitOpts, _FIT_TOP_LEFT);
+            set_fit_opts(&fit_opts, _FIT_TOP_LEFT);
         } else if (strcmp(token, "BOTTOM-LEFT") == 0) {
-            setFitOpts(&fitOpts, _FIT_BOTTOM_LEFT);
+            set_fit_opts(&fit_opts, _FIT_BOTTOM_LEFT);
         } else if (strcmp(token, "BOTTOM-RIGHT") == 0) {
-            setFitOpts(&fitOpts, _FIT_BOTTOM_RIGHT);
+            set_fit_opts(&fit_opts, _FIT_BOTTOM_RIGHT);
         } else if (strcmp(token, "TOP-RIGHT") == 0) {
-            setFitOpts(&fitOpts, _FIT_TOP_RIGHT);
+            set_fit_opts(&fit_opts, _FIT_TOP_RIGHT);
         } else if (strcmp(token, "CROPPED") == 0) {
-            setFitOpts(&fitOpts, _FIT_CROPPED);
+            set_fit_opts(&fit_opts, _FIT_CROPPED);
         } else if (strcmp(token, "STRETCHED") == 0) {
-            setFitOpts(&fitOpts, _FIT_STRETCHED);
+            set_fit_opts(&fit_opts, _FIT_STRETCHED);
         } else {
             log_fatal("`%s' is not a valid fit option!\n"
                       "Please make sure fit is configured correctly!",
-                      fitOptStr);
+                      fit_opt_str);
             exit(EXIT_FAILURE);
         }
 
         token = strtok(NULL, " ,");
     }
 
-    return fitOpts;
+    return fit_opts;
 }
 
-void ImFit_fitOpts(Imlib_Image *image[], const int fitOpts) {
+void Imlib_fit(Imlib_Image *image[], const int fit_opts) {
     /* This function is responsible for fitting the image when rendering depending
      * in user's arguments.
      *
@@ -110,7 +110,7 @@ void ImFit_fitOpts(Imlib_Image *image[], const int fitOpts) {
      * Despite these being written with uppercase letters, the fitOpt is not case
      * sensitive.
      *
-     * ImFit_fitOpts() will also modify the loaded Imlib images based on fitOpt.
+     * ImFit_fit_opts() will also modify the loaded Imlib images based on fitOpt.
      */
 
     /* This function is still a TODO and this is it's pseudo-code: */
@@ -118,32 +118,32 @@ void ImFit_fitOpts(Imlib_Image *image[], const int fitOpts) {
     // int imHeight  = Imlib_get_image_height(*sampleImg);
 
     /* Position */
-    if ((fitOpts & _FIT_FULLSCREEN) != 0) {
+    if ((fit_opts & _FIT_FULLSCREEN) != 0) {
         // Scale image based on width and height;
         // return position;
     }
 
-    else if ((fitOpts & _FIT_CENTERED) != 0) {
+    else if ((fit_opts & _FIT_CENTERED) != 0) {
         // Determine the center of the image and XScreen's width and height and then
         // determine where the position should start from with that info;
     }
 
-    else if ((fitOpts & _FIT_TOP_LEFT) != 0) {
+    else if ((fit_opts & _FIT_TOP_LEFT) != 0) {
         // Return the position as 0,0 since no modifications are needed;
     }
 
-    else if ((fitOpts & _FIT_BOTTOM_LEFT) != 0) {
+    else if ((fit_opts & _FIT_BOTTOM_LEFT) != 0) {
         // Determine XScreen's height;
         // Return position as (Xscreen height - img height),0;
     }
 
-    else if ((fitOpts & _FIT_BOTTOM_RIGHT) != 0) {
+    else if ((fit_opts & _FIT_BOTTOM_RIGHT) != 0) {
         // Determine XScreen's width and height
         // Return position as (XScreen height - img height),(XScreen width - img
         // width);
     }
 
-    else if ((fitOpts & _FIT_TOP_RIGHT) != 0) {
+    else if ((fit_opts & _FIT_TOP_RIGHT) != 0) {
         // Determine XScreen's width and height;
         // Return position as 0,(XScreen width - img width);
     }
@@ -155,10 +155,10 @@ void ImFit_fitOpts(Imlib_Image *image[], const int fitOpts) {
     }
 
     /* Modifiers */
-    if ((fitOpts & _FIT_CROPPED) != 0) {
+    if ((fit_opts & _FIT_CROPPED) != 0) {
 
     }
 
-    else if ((fitOpts & _FIT_STRETCHED) != 0) {
+    else if ((fit_opts & _FIT_STRETCHED) != 0) {
     }
 }

@@ -54,16 +54,16 @@
 bool _DEBUG = DEBUG;
 
 /* This path will be concatenated with HOME envar */
-char defaultConfigFilePath[PATH_MAX];
+char default_config_file_path[PATH_MAX];
 
 /* Basic config/argument variables */
-//char params_config.imDirPath[PATH_MAX];                   /* path to images directory, from configuration file */ //TODO remove this
-//char params_args.imDirPath[PATH_MAX];                    /* path to images directory, from user argument (not -c) */ //TODO remove this
+//char params_config.im_dir_path[PATH_MAX];                   /* path to images directory, from configuration file */ //TODO remove this
+//char params_args.im_dir_path[PATH_MAX];                    /* path to images directory, from user argument (not -c) */ //TODO remove this
 
-char confPath[PATH_MAX];          /* path to configuration file */
-unsigned imgCount;                         /* number of images */
-char **imgPath;                            /* pointers to paths of images, from configuration file */ //TODO: replace with linked list
-double frameTime = DEFAULT_FRAME_TIME;     /* time between frames */ /* The time set is the default one */
+char conf_path[PATH_MAX];          /* path to configuration file */
+unsigned img_count;                         /* number of images */
+char **img_path;                            /* pointers to paths of images, from configuration file */ //TODO: replace with linked list
+double frame_time = DEFAULT_FRAME_TIME;     /* time between frames */ /* The time set is the default one */
 
 /*
  * TODO
@@ -75,28 +75,28 @@ double frameTime = DEFAULT_FRAME_TIME;     /* time between frames */ /* The time
 //bool isArgConf = false;                    /* If true, the configuration file from argument will be used */ //replaced with params.hasConf
 
 //bool hasArgTime = false;                   /* If true, time from user argument will be used */
-//bool params_args.hasImDirPath = false;                    /* If true, the directory will be used from user argument */
+//bool params_args.has_im_dir_path = false;                    /* If true, the directory will be used from user argument */
 
-bool usingStaticWallpaper = false;         /* If true, OAWP will run only once to set a static wallpaper */
+bool using_static_wallpaper = false;         /* If true, OAWP will run only once to set a static wallpaper */
 //bool hasArgStaticWallpaper = false;        /* If true, it will be used the Static Wallpaper from user argument */
 
-//bool params_args.hasFitOpt = false;                    /* If true, the fit option from user argument will be used - Order 0 */
+//bool params_args.has_fit_opt = false;                    /* If true, the fit option from user argument will be used - Order 0 */
 //bool hasConfFit = false;                   /* If true, the fit option from configuration file will be used - Order 1 */
 //char defaultFitOpt[] = DEFAULT_FIT_OPTION; /* Default Fit Option - Order 2 */ //TODO: use enums
 //char *fitOpt;                              /* The final fit option */
 //
 //impaths_t* im_paths_conf;
 //impaths_t* im_paths_arg;
-impaths_t im_paths_conf;
-impaths_t im_paths_arg;
+ImPaths im_paths_conf;
+ImPaths im_paths_arg;
 
 int main(int argc, char *argv[]) {
 
   /* == Initialize everything before running anything meaningful == */
 
   /* Set up a handler for the SIGTERM and SIGINT signal */
-  signal(SIGTERM, termHandler);
-  signal(SIGINT, termHandler);
+  signal(SIGTERM, term_handler);
+  signal(SIGINT, term_handler);
 
   // TODO LOGGER
   FILE *log_file = fopen("logfile.txt", "a");
@@ -110,19 +110,19 @@ int main(int argc, char *argv[]) {
   log_add_fp(log_file, LOG_TRACE);
 
   /* Format the path from relative to absolute */
-  formatPath(DEFAULT_CONFIG_FILE_PATH, defaultConfigFilePath);
+  format_path(default_config_file_path, DEFAULT_CONFIG_FILE_PATH);
 
   //TODO: Free these
   //im_paths_arg = (impaths_t*)malloc(sizeof(impaths_t));
   //im_paths_conf = (impaths_t*)malloc(sizeof(impaths_t));
  
-  imPathsInit(&im_paths_arg);
-  imPathsInit(&im_paths_conf);
+  im_paths_init(&im_paths_arg);
+  im_paths_init(&im_paths_conf);
 
   params_t params_args;
   params_t params_config;
 
-  if (argGetOpt(argc, (const char**)argv, &params_args)) {
+  if (arg_get_opt(argc, (const char**)argv, &params_args)) {
     log_error("Something went wrong with argument parsing.");
     exit(EXIT_FAILURE);
   }
@@ -134,13 +134,13 @@ int main(int argc, char *argv[]) {
   const char *tmp_cfg_str;
 
   config_init(&cfg);
-  if(! params_args.hasConfPath)
-    strcpy(confPath, defaultConfigFilePath);
+  if(! params_args.has_conf_path)
+    strcpy(conf_path, default_config_file_path);
 
-  log_debug("configuration file path: \"%s\"", confPath);
+  log_debug("configuration file path: \"%s\"", conf_path);
 
   // Read the file. If there is an error, report it and exit.
-  if(! config_read_file(&cfg, confPath)) {
+  if(! config_read_file(&cfg, conf_path)) {
     log_error("%s:%d - %s", config_error_file(&cfg),
             config_error_line(&cfg), config_error_text(&cfg));
     config_destroy(&cfg);
@@ -148,77 +148,77 @@ int main(int argc, char *argv[]) {
   }
 
   if(config_lookup_bool(&cfg, "debug", &params_config.debug)) {
-    params_config.hasDebug = true;
+    params_config.has_debug = true;
     _DEBUG = params_config.debug;
   } else {
-    params_config.hasDebug = false;
+    params_config.has_debug = false;
     log_error("No 'debug' setting in configuration file.");
   }
 
   if(_DEBUG)
     log_debug("Enabled debug");
 
-  if(! params_args.hasStaticWallpaper &&
+  if(! params_args.has_static_wallpaper &&
      config_lookup_string(&cfg, "static-wallpaper", &tmp_cfg_str)) {
-    strcpy(params_config.staticWallpaper, tmp_cfg_str);
+    strcpy(params_config.static_wallpaper, tmp_cfg_str);
 
-    if(access(params_config.staticWallpaper, F_OK) != 0) {
-      log_error("%s from 'static-wallpaper' does not exist.", params_config.staticWallpaper);
+    if(access(params_config.static_wallpaper, F_OK) != 0) {
+      log_error("%s from 'static-wallpaper' does not exist.", params_config.static_wallpaper);
       exit(EXIT_FAILURE);
     }
 
-    if(access(params_config.staticWallpaper, R_OK) != 0) {
-      log_error("%s from 'static-wallpaper' cannot be read. Please check the file permissions.", params_config.staticWallpaper);
+    if(access(params_config.static_wallpaper, R_OK) != 0) {
+      log_error("%s from 'static-wallpaper' cannot be read. Please check the file permissions.", params_config.static_wallpaper);
       exit(EXIT_FAILURE);
     }
 
-    imgPath = (char**)malloc(1 * sizeof(char*));
-    imgPath[0] = (char*)malloc(PATH_MAX * sizeof(char));
-    strcpy(imgPath[0], params_config.staticWallpaper);
-    imgCount++;
-    usingStaticWallpaper = true;
+    img_path = (char**)malloc(1 * sizeof(char*));
+    img_path[0] = (char*)malloc(PATH_MAX * sizeof(char));
+    strcpy(img_path[0], params_config.static_wallpaper);
+    img_count++;
+    using_static_wallpaper = true;
   }
 
-  if(params_args.hasImDirPath && !usingStaticWallpaper) {
-    getImgPath(params_args.imDirPath, &im_paths_arg);
+  if(params_args.has_im_dir_path && !using_static_wallpaper) {
+    im_paths_get(params_args.im_dir_path, &im_paths_arg);
   }
-  else if(!params_args.hasImDirPath &&
+  else if(!params_args.has_im_dir_path &&
           config_lookup_string(&cfg, "path", &tmp_cfg_str) &&
-          !usingStaticWallpaper) {
-    strcpy(params_config.imDirPath, tmp_cfg_str);
+          !using_static_wallpaper) {
+    strcpy(params_config.im_dir_path, tmp_cfg_str);
 
-    getImgPath(params_args.imDirPath, &im_paths_arg);
-    //getImgCount(params_config.imDirPath); //TODO: Do that somewhere else
-    //getImgPath(params_config.imDirPath);  //TODO: Do that somewhere else
+    im_paths_get(params_args.im_dir_path, &im_paths_arg);
+    //getImgCount(params_config.im_dir_path); //TODO: Do that somewhere else
+    //im_paths_get(params_config.im_dir_path);  //TODO: Do that somewhere else
   }
-  else if(! usingStaticWallpaper) {
+  else if(! using_static_wallpaper) {
     log_error("No 'path' setting in configuration file.");
     exit(1);
   }
 
-  if(! params_args.hasFrameTime &&
-     config_lookup_float(&cfg, "time", &params_config.frameTime) &&
-     !usingStaticWallpaper) {
-    if(params_config.frameTime < MIN_FRAME_TIME) {
+  if(! params_args.has_frame_time &&
+     config_lookup_float(&cfg, "time", &params_config.frame_time) &&
+     !using_static_wallpaper) {
+    if(params_config.frame_time < MIN_FRAME_TIME) {
       log_error("Time cannot be less than %lf.", MIN_FRAME_TIME);
       exit(EXIT_FAILURE);
     }
 
-    log_debug("frameTime: %lf", frameTime);
-    params_config.hasFrameTime = true;
+    log_debug("frame_time: %lf", frame_time);
+    params_config.has_frame_time = true;
   }
-  else if(! usingStaticWallpaper) {
-    params_config.hasFrameTime = false;
+  else if(! using_static_wallpaper) {
+    params_config.has_frame_time = false;
     log_warn("No 'time' setting in configuration file. Using default '0.07' seconds as time parameter.");
   }
 
   if(config_lookup_string(&cfg, "fit", &tmp_cfg_str) &&
-     !params_args.hasFitOpt &&
-     !usingStaticWallpaper) {
-    params_config.fitOpt = fit_atoe(tmp_cfg_str);
-    params_config.hasFitOpt = true;
+     !params_args.has_fit_opt &&
+     !using_static_wallpaper) {
+    params_config.fit_opt = fit_atoe(tmp_cfg_str);
+    params_config.has_fit_opt = true;
   } else {
-    params_config.hasFitOpt = false;
+    params_config.has_fit_opt = false;
   }
 
   config_destroy(&cfg);
@@ -234,25 +234,25 @@ int main(int argc, char *argv[]) {
   //  fileOffset++;
 
   // Loading Images to ImLib
-  //Imlib_Image images[imgCount-fileOffset];
-  //if(!usingStaticWallpaper) {
-  //  for(int temp = 0; temp < imgCount - fileOffset; temp++) {
-  //    images[temp] = imlib_load_image(imgPath[(fileOffset+temp)]);
-  //    log_debug("Imlib loaded %s", (imgPath)[(fileOffset+temp)]);
-  Imlib_Image images[imgCount];
-  if(!usingStaticWallpaper) {
-    for(int temp = 0; temp < imgCount; temp++) {
-      images[temp] = imlib_load_image(imgPath[(temp)]);
-      log_debug("Imlib loaded %s", (imgPath)[(temp)]);
+  //Imlib_Image images[img_count-fileOffset];
+  //if(!using_static_wallpaper) {
+  //  for(int temp = 0; temp < img_count - fileOffset; temp++) {
+  //    images[temp] = imlib_load_image(img_path[(fileOffset+temp)]);
+  //    log_debug("Imlib loaded %s", (img_path)[(fileOffset+temp)]);
+  Imlib_Image images[img_count];
+  if(!using_static_wallpaper) {
+    for(int temp = 0; temp < img_count; temp++) {
+      images[temp] = imlib_load_image(img_path[(temp)]);
+      log_debug("Imlib loaded %s", (img_path)[(temp)]);
     }
-    log_debug("");
   }
   else {
-    images[0] = imlib_load_image((imgPath)[0]);
+    images[0] = imlib_load_image((img_path)[0]);
 
-      log_debug("Imlib loaded %s", (imgPath)[0]);
+      log_debug("Imlib loaded %s", (img_path)[0]);
   }
-  freeUsingPath();
+  // TODO: free im_paths
+  //freeUsingPath();
 
   // Loading the monitors, counting them and getting the resolution
 
@@ -310,17 +310,17 @@ int main(int argc, char *argv[]) {
     log_debug("Starting render loop ...");
 
   struct timespec timeout;
-  double time_nsec_raw = frameTime;
+  double time_nsec_raw = frame_time;
   if(time_nsec_raw > 1.0)
     time_nsec_raw -= floor(time_nsec_raw);
-  timeout.tv_sec  = floor(frameTime);
+  timeout.tv_sec  = floor(frame_time);
   timeout.tv_nsec = time_nsec_raw * 1e9;
 
   while(1) {
     // TODO: remove fileoffset
-    //for(int cycle = 0; cycle < imgCount - fileOffset; ++cycle) {
-    for(int cycle = 0; cycle < imgCount; ++cycle) {
-      Imlib_Image current = images[cycle % imgCount];
+    //for(int cycle = 0; cycle < img_count - fileOffset; ++cycle) {
+    for(int cycle = 0; cycle < img_count; ++cycle) {
+      Imlib_Image current = images[cycle % img_count];
       for(int monitor = 0; monitor < screen_count; ++monitor) {
         Monitor *c_monitor = &monitors[monitor];
         imlib_context_push(c_monitor->render_context);
@@ -330,7 +330,7 @@ int main(int argc, char *argv[]) {
 
         imlib_render_image_on_drawable(0, 0);
 
-        setRootAtoms(display, c_monitor);
+        set_root_atoms(display, c_monitor);
         XKillClient(display, AllTemporary);
         XSetCloseDownMode(display, RetainTemporary);
         XSetWindowBackgroundPixmap(display, c_monitor->root, c_monitor->pixmap);
@@ -339,7 +339,7 @@ int main(int argc, char *argv[]) {
         XSync(display, False);
         imlib_context_pop();
       }
-      if(usingStaticWallpaper) {
+      if(using_static_wallpaper) {
 
           log_debug("Using static wallpaper detected, exiting ...");
         exit(EXIT_SUCCESS);
@@ -350,22 +350,7 @@ int main(int argc, char *argv[]) {
   }
 }
 
-void freeUsingPath(void) {
-  /* As the name says, this function frees all the
-   * allocated memory from the using image path */
-
-  for(int temp; temp < imgCount; temp++) {
-
-      log_debug("Deallocated address "KGRN"%p"RST" pointing to file index %d",
-              (imgPath)[temp], temp);
-    free((imgPath)[temp]);
-  }
-   
-      log_debug("Deallocated dynamic array of images at address "KGRN"%p"RST"\n", (imgPath));
-    free(imgPath);
-}
-
-void setRootAtoms(Display *restrict display, Monitor *restrict monitor) {
+void set_root_atoms(Display *restrict display, Monitor *restrict monitor) {
   /* This function should clear and load the images to
    * X11 screen.                                    */
 

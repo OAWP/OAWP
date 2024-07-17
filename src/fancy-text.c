@@ -23,84 +23,81 @@
 
 #include "fancy-text.h"
 #include "info.h"
-#include "oawp.h"
 #include "log.h"
 
-static bool isExecutable(const char *restrict executable) {
+static bool _is_executable(const char *restrict executable) {
     char command[1024];
     snprintf(command, sizeof(command), "which %s > /dev/null 2>&1", executable);
     return (system(command) == 0);
 }
 
-void puts_logo(const uint8_t logo) {
-  
-  /* File to pipe to the *AWP output */
-  FILE *rainbowPipe = stdout;
-  
-#ifndef _WIN32
-  /*
-   * Outputs *AWP ascii logo with a rainbow text manipulator, a tool to color
-   * text on terminal with gradient.
-   *
-   * This can be run only on *nix operating systems, thus the ifndef _WIN32
-   * macro.
-   *
-   * _Not a hard dependency_
-   */
-  
-  bool isToCloseFile = true;
-  
-
-  if (isExecutable("lcat-rs")) {
-  //if (access("lcat-rs", X_OK) == 0) {
-    log_debug("`lcat-rs' found in the system, opting for it to print *AWP logo");
+void _puts_logo(const AwpLogo logo) {
     
-    rainbowPipe = popen("lcat-rs", "w");
-    /* lcat-rs by `davidkna' - <https://github.com/davidkna/lcat-rs> */
-  }
-
-  else if (isExecutable("roflcat")) {
-  //else if (access("roflcat", X_OK) == 0) {
-    log_debug("`roflcat' found in the system, opting for it to print *AWP logo");
+    /* File to pipe to the *AWP output */
+    FILE *p_rainbow_pipe = stdout;
+    /*
+     * Outputs *AWP ascii logo with a rainbow text manipulator, a tool to color
+     * text on terminal with gradient.
+     *
+     * _Not a hard dependency_
+     */
     
-    rainbowPipe = popen("roflcat", "w");
-    /* roflcat by `jameslzhu' - <https://github.com/jameslzhu/roflcat> */
-  }
-
-  else if (isExecutable("lolcat")) {
-  //else if (access("lolcat", X_OK) == 0) {
-    log_debug("`lolcat' found in the system, opting for it to print *AWP logo");
+#ifdef ENABLE_COLORS
+    /// If true, rainbow pipe needs to be closed
+    bool will_close_p_rainbow_pipe = true;
     
-    rainbowPipe = popen("lolcat", "w");
-    /* lolcat by `busyloop' - <https://github.com/busyloop/lolcat> */
-  }
-  else {
-    log_debug("No rainbow text manipulator found in the system, printing raw *AWP logo");
-    rainbowPipe = stdout;
-    isToCloseFile = false;
-  }
-#endif /* _WIN32 */
-
-  switch(logo) {
     
-    case logo_oawp:
-      /* Outputs OAWP ascii logo without gradient */
-      fprintf(rainbowPipe, "\n" /* print logo */
-              KBCYN"  /$$$$$$ " KBLU"  /$$$$$$ " KMAG" /$$      /$$" KBGRN" /$$$$$$$" RST"\n"
-              KBCYN" /$$__  $$" KBLU" /$$__  $$" KMAG"| $$  /$ | $$" KBGRN"| $$__  $$"RST"\n"
-              KBCYN"| $$  \\ $$" KBLU"| $$  \\ $$" KMAG"| $$ /$$$| $$" KBGRN"| $$  \\ $$"RST"\n"
-              KBCYN"| $$  | $$" KBLU"| $$$$$$$$" KMAG"| $$/$$ $$ $$" KBGRN"| $$$$$$$/"RST"\n"
-              KBCYN"| $$  | $$" KBLU"| $$__  $$" KMAG"| $$$$_  $$$$" KBGRN"| $$____/"RST"\n"
-              KBCYN"| $$  | $$" KBLU"| $$  | $$" KMAG"| $$$/ \\  $$$" KBGRN"| $$"RST"\n"
-              KBCYN"|  $$$$$$/" KBLU"| $$  | $$" KMAG"| $$/   \\  $$" KBGRN"| $$"RST"\n"
-              KBCYN" \\______/ " KBLU"|__/  |__/" KMAG"|__/     \\__/" KBGRN"|__/"RST"\n"
+    if (_is_executable("lcat-rs")) {
+        //if (access("lcat-rs", X_OK) == 0) {
+        log_debug("`lcat-rs' found in the system, opting for it to print *AWP logo");
+        
+        p_rainbow_pipe = popen("lcat-rs", "w");
+        /* lcat-rs by `davidkna' - <https://github.com/davidkna/lcat-rs> */
+    }
+    
+    else if (_is_executable("roflcat")) {
+        //else if (access("roflcat", X_OK) == 0) {
+        log_debug("`roflcat' found in the system, opting for it to print *AWP logo");
+        
+        p_rainbow_pipe = popen("roflcat", "w");
+        /* roflcat by `jameslzhu' - <https://github.com/jameslzhu/roflcat> */
+    }
+    
+    else if (_is_executable("lolcat")) {
+        //else if (access("lolcat", X_OK) == 0) {
+        log_debug("`lolcat' found in the system, opting for it to print *AWP logo");
+        
+        p_rainbow_pipe = popen("lolcat", "w");
+        /* lolcat by `busyloop' - <https://github.com/busyloop/lolcat> */
+    }
+    else {
+        log_debug("No rainbow text manipulator found in the system, printing raw *AWP logo");
+        p_rainbow_pipe = stdout;
+        will_close_p_rainbow_pipe = false;
+    }
+    
+#endif
+    
+    switch(logo) {
+        
+        case LOGO_OAWP:
+            /* Outputs OAWP ascii logo without gradient */
+            fprintf(p_rainbow_pipe, "\n" /* print logo */
+                    KBCYN"  /$$$$$$ " KBLU"  /$$$$$$ " KMAG" /$$      /$$" KBGRN" /$$$$$$$" RST"\n"
+                    KBCYN" /$$__  $$" KBLU" /$$__  $$" KMAG"| $$  /$ | $$" KBGRN"| $$__  $$"RST"\n"
+                    KBCYN"| $$  \\ $$" KBLU"| $$  \\ $$" KMAG"| $$ /$$$| $$" KBGRN"| $$  \\ $$"RST"\n"
+                    KBCYN"| $$  | $$" KBLU"| $$$$$$$$" KMAG"| $$/$$ $$ $$" KBGRN"| $$$$$$$/"RST"\n"
+                    KBCYN"| $$  | $$" KBLU"| $$__  $$" KMAG"| $$$$_  $$$$" KBGRN"| $$____/"RST"\n"
+                    KBCYN"| $$  | $$" KBLU"| $$  | $$" KMAG"| $$$/ \\  $$$" KBGRN"| $$"RST"\n"
+                    KBCYN"|  $$$$$$/" KBLU"| $$  | $$" KMAG"| $$/   \\  $$" KBGRN"| $$"RST"\n"
+                    KBCYN" \\______/ " KBLU"|__/  |__/" KMAG"|__/     \\__/" KBGRN"|__/"RST"\n"
       );
       break;
 
 #ifdef __APPLE__
-    case logo_mawp:
+    case LOGO_MAWP:
       /* Outputs MAWP ascii logo without gradient */
-      fprintf(rainbowPipe, "\n" /* print logo */
+      fprintf(p_rainbow_pipe, "\n" /* print logo */
               KWHT
               " /$$      /$$" "  /$$$$$$ " " /$$      /$$" " /$$$$$$$""\n"
               "| $$$    /$$$" " /$$__  $$" "| $$  /$ | $$" "| $$__  $$""\n"
@@ -115,9 +112,9 @@ void puts_logo(const uint8_t logo) {
 
 #elif _WIN32
       
-    case logo_winawp:
+    case LOGO_WINAWP:
       /* Outputs WinAWP ascii logo without gradient */
-      fprintf(rainbowPipe, "\n" /* print logo */
+      fprintf(p_rainbow_pipe, "\n" /* print logo */
               KBCYN" /$$      /$$" " /$$" "          " KBWHT"  /$$$$$$ " " /$$      /$$" " /$$$$$$$"RST"\n"
               KBCYN"| $$  /$ | $$" "|__/" "          " KBWHT" /$$__  $$" "| $$  /$ | $$" "| $$__  $$"RST"\n"
               KBCYN"| $$ /$$$| $$" " /$$" " /$$$$$$$ " KBWHT"| $$  \\ $$" "| $$ /$$$| $$" "| $$  \\ $$"RST"\n"
@@ -131,9 +128,9 @@ void puts_logo(const uint8_t logo) {
 
 #else
       
-    case logo_xawp:
+    case LOGO_XAWP:
       /* Outputs XAWP ascii logo without gradient */
-      fprintf(rainbowPipe, "\n" /* print logo */
+      fprintf(p_rainbow_pipe, "\n" /* print logo */
               KYEL" /$$   /$$"  KRED"  /$$$$$$ "  KMAG" /$$      /$$"  KBCYN" /$$$$$$$ "  RST"\n"
               KYEL"| $$  / $$"  KRED" /$$__  $$"  KMAG"| $$  /$ | $$"  KBCYN"| $$__  $$"  RST"\n"
               KYEL"|  $$/ $$/"  KRED"| $$  \\ $$"  KMAG"| $$ /$$$| $$"  KBCYN"| $$  \\ $$"  RST"\n"
@@ -145,9 +142,9 @@ void puts_logo(const uint8_t logo) {
       );
       break;
      
-    case logo_wawp:
+    case LOGO_WAWP:
       /* Outputs WAWP ascii logo without gradient */
-      fprintf(rainbowPipe, "\n" /* print logo */
+      fprintf(p_rainbow_pipe, "\n" /* print logo */
               /* KBYEL "\033[103m" - Yellow background, white foreground */
               KBWHT BBYEL " /$$      /$$" "  /$$$$$$ " " /$$      /$$" " /$$$$$$$ "RST"\n"
               KBWHT BBYEL "| $$  /$ | $$" " /$$__  $$" "| $$  /$ | $$" "| $$__  $$"RST"\n"
@@ -163,26 +160,17 @@ void puts_logo(const uint8_t logo) {
 #endif
   }
 
-#ifndef _WIN32
+  /* Fush the rainbow pipe file */
+  fflush(p_rainbow_pipe);
 
-  /*
-   * This is valid only if a rainbowPipe exists, therefore this should run only
-   * on *nix operating systems as non-*nix OS'es won't have anything else than
-   * stdout (which shouldn't be closed).
-   *
-   * In case of stdout, the following will not RUN;
-   * In case of _WIN32, the following will not COMPILE.
-   */
-  if(isToCloseFile)
-    pclose(rainbowPipe);
-#endif /* _WIN32 */
-
-  /* Fush the rainbow pipe file and close it unless it's stdout */
-  fflush(rainbowPipe);
+#ifdef ENABLE_COLORS
+  /// Close p_rainbow_pipe in case it was opened
+  if(will_close_p_rainbow_pipe)
+      pclose(p_rainbow_pipe);
+#endif
 
   /* After printing the logo, print the title and version as well */
   fprintf(stdout, KBWHT"Open Animated Wallpaper Player v%s"RST"\n\n", __VERSION_STR);
-
 
 
   /* ASCII art:
@@ -250,27 +238,28 @@ void puts_logo(const uint8_t logo) {
 
 void puts_logo_auto(void) {
 #ifdef __APPLE__
-  puts_logo(logo_mawp);
+  _puts_logo(LOGO_MAWP);
 
 #elif _WIN32
-  puts_logo(logo_mawp);
+  _puts_logo(LOGO_MAWP);
 
 #else
   if (getenv("DISPLAY") == NULL) {
     log_info("Couldn't find any active display.");
-    puts_logo(logo_oawp);
+    _puts_logo(LOGO_OAWP);
     return;
   } else if (getenv("DISPLAY_WAYLAND") != NULL) {
-    puts_logo(logo_wawp);
+    _puts_logo(LOGO_WAWP);
     return;
   }
-  puts_logo(logo_xawp);
+  _puts_logo(LOGO_XAWP);
 
 #endif
 }
 
 void help(void) {
-  printf(                                                                                 "\n"
+  fprintf(stdout,
+                                                                                          "\n"
          "OAWP - Open Animated Wallpaper Player"                                          "\n"
          "Play animated wallpapers"                                                       "\n"
                                                                                           "\n"
@@ -295,7 +284,7 @@ void help(void) {
          "-c, --config\t\t\t"            "Set another configuration file than the default""\n"
 
          #ifdef _WIN32
-                                    KBWHT"%%APPDATA%%\\oawp\\oawp.conf"RST" configuration file"    "\n"
+                                    KBWHT"%%APPDATA%%\\oawp\\oawp.conf"RST" configuration file\n"
          #else
          "\t\t\t\t"                 KBWHT"%s/.config/oawp/oawp.conf"RST" configuration file\n"
          #endif
@@ -309,7 +298,8 @@ void help(void) {
 }
 
 void version(void) {
-  printf("OAWP version %s | git %s" /* version number */                                  "\n"
+  fprintf(stdout,
+         "OAWP version %s | git %s" /* version number */                                  "\n"
          "Source URI: <%s>"                                                               "\n"
                                                                                           "\n"
          "Copyright (C) 2023-2024 TheRealOne78"                                           "\n"

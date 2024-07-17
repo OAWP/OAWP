@@ -39,15 +39,15 @@
 
 
 /// Contains paths for all the images to render
-typedef struct impaths {
+typedef struct {
   uint64_t image_count; // Number of images
-  struct charlist {
+  struct CharList {
     char im_path[PATH_MAX];
-    struct charlist* next_p;
-  } *list;
-  struct charlist *index;
-  struct charlist *end;
-} impaths_t;
+    struct CharList* p_next;
+  } *p_list;
+  struct CharList *p_index;
+  struct CharList *p_end;
+} ImPaths;
 
 /**
  * @brief Check if the first character is a '~'.
@@ -61,7 +61,7 @@ typedef struct impaths {
  *
  * @note Thanks to OpenAI's ChatGPT for all the help!
  */
-uint8_t formatPath(const char *restrict path, char formatted_path[PATH_MAX]);
+uint8_t format_path(char dst[PATH_MAX], const char *restrict src);
 
 /**
  * @brief Check if the directory exists.  If not, create them.
@@ -72,20 +72,20 @@ uint8_t formatPath(const char *restrict path, char formatted_path[PATH_MAX]);
  *
  * @return 0 if everything is alright, 1 if errors occured.
  */
-uint8_t verifyDirPath(const char path[PATH_MAX]);
+uint8_t verify_dir_path(const char path[PATH_MAX]);
 
-static int compareFun (const void *restrict p, const void *restrict q);
+static int compare_fun (const void *restrict p, const void *restrict q);
 
 // DEPRECATED
 //uint8_t getImgCount(const char str[PATH_MAX], uint64_t *restrict img_count);
 
-uint8_t getImgPath(const char str[PATH_MAX], impaths_t *restrict im_paths);
+uint8_t im_paths_get(const char str[PATH_MAX], ImPaths *restrict im_paths);
 
-uint8_t imPathsInit(impaths_t *restrict im_paths);
-uint8_t imPathsIndexReset(impaths_t *restrict im_paths);
-uint8_t imPathsPush(const char *restrict str, impaths_t *restrict im_paths);
-uint8_t imPathsNext(impaths_t *restrict im_paths);
-uint8_t ImPathsSort(impaths_t *restrict im_paths);
-uint8_t imPathsFree(impaths_t *restrict im_paths);
+uint8_t im_paths_init(ImPaths *restrict im_paths);
+uint8_t im_paths_index_reset(ImPaths *restrict im_paths);
+uint8_t im_paths_push(const char *restrict str, ImPaths *restrict im_paths);
+uint8_t im_paths_next(ImPaths *restrict im_paths);
+uint8_t im_paths_sort(ImPaths *restrict im_paths);
+uint8_t im_paths_free(ImPaths *restrict im_paths);
 
 #endif // __DIR_CHECKER_H__

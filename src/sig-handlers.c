@@ -21,9 +21,7 @@
 #include "log.h"
 #include <stdlib.h>
 
-void termHandler(const int signum) {
-  /* When receiving a SIGTERM or SIGINT, this function will exit gracefully
-   * with an informative quit message to the user. */
+void term_handler(const int signum) {
 
   log_info("Quiting...");
 

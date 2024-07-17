@@ -17,6 +17,7 @@
  */
 
 #include <getopt.h>
+#include <linux/limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -30,7 +31,9 @@
 #include "log.h"
 
 
-uint8_t argGetOpt(const int argc, const char **argv, params_t *restrict parameters) {
+uint8_t arg_get_opt(const int argc, const char **argv, params_t *restrict parameters) {
+
+    char tmp_path[PATH_MAX];
 
     /* Struct argument options */
     static struct option long_options [] = {
@@ -38,7 +41,7 @@ uint8_t argGetOpt(const int argc, const char **argv, params_t *restrict paramete
         { "time"                , required_argument, NULL , 't' },
         { "version"             , no_argument      , NULL , 'v' },
         { "debug"               , no_argument      , NULL , 'D' },
-        { "fit"                 , required_argument, NULL , 'f' }, // Not implemented yet - This is a feature that OAWP will fit the photo based on user's requirements
+        { "fit"                 , required_argument, NULL , 'f' }, // Not implemented yet - This is a feature that OAWP will fit the image based on user's requirements
         { "directory"           , required_argument, NULL , 'd' },
         { "config"              , required_argument, NULL , 'c' },
         { "set-static-wallpaper", required_argument, NULL , 'S' },
@@ -61,13 +64,13 @@ uint8_t argGetOpt(const int argc, const char **argv, params_t *restrict paramete
                 /* time */
             case 't':
                 //snprintf(configTime, sizeof(configTime), "%s", optarg); TODO: remove this?
-                parameters->frameTime = atof(optarg);
-                if(parameters->frameTime < MIN_FRAME_TIME) {
+                parameters->frame_time = atof(optarg);
+                if(parameters->frame_time < MIN_FRAME_TIME) {
                     log_error("Time cannot be less than %lf.", MIN_FRAME_TIME);
                     exit(1);
                 }
                 //TODO
-                parameters->hasFrameTime = true;
+                parameters->has_frame_time = true;
                 break;
 
                 /* version */
@@ -84,25 +87,24 @@ uint8_t argGetOpt(const int argc, const char **argv, params_t *restrict paramete
 
                 /* fit */
             case 'f':
-                printf("Fit is not implemented yet, skipping...");
+                log_info("Fit is not implemented yet, skipping ...");
                 /* TODO: implement this fit and remove this break */
                 break;
                 /* part of Fit */
                 //TODO make a function to transform optarg to enums
-                parameters->fitOpt = fit_atoe(optarg);
-                parameters->hasFitOpt = true;
+                parameters->fit_opt = fit_atoe(optarg);
+                parameters->has_fit_opt = true;
                 break;
 
                 /* directory */
             case 'd':
-                strcpy((char*)parameters->imDirPath, optarg);
+                strcpy(parameters->im_dir_path, optarg);
 
-                impaths_t a;
-                imPathsInit(&a);
-                getImgPath(parameters->imDirPath, &a);
-                //getImgCount(parameters->imDirPath);
-                //getImgPath(parameters->imDirPath);
-                parameters->hasImDirPath = true;
+                //TODO: prototype var
+                ImPaths a;
+                im_paths_init(&a);
+                im_paths_get(parameters->im_dir_path, &a);
+                parameters->has_im_dir_path = true;
                 break;
 
                 /* config */
@@ -115,29 +117,41 @@ uint8_t argGetOpt(const int argc, const char **argv, params_t *restrict paramete
                     log_error("%s configuration file cannot be read. Please check the file permissions.", optarg);
                     exit(1);
                 }
-                strcpy((char*)parameters->confPath, optarg);
-                parameters->hasConfPath = true;
+                strcpy(parameters->conf_path, optarg);
+                parameters->has_conf_path = true;
                 break;
 
                 /* set-static-wallpaper */
             case 'S':
-                if(access(optarg, F_OK) != 0) {
-                    log_error("%s from 'static-wallpaper' does not exist.", optarg);
+                if(strlen(optarg) > PATH_MAX - 1) {
+                    log_error("Static wallpaper path too long!");
+                    exit(EXIT_FAILURE);
+                }
+
+                format_path(tmp_path, optarg);
+
+                if(access(tmp_path, F_OK) != 0) {
+                    log_error("%s from 'static-wallpaper' does not exist.", tmp_path);
                     exit(1);
                 }
-                if(access(optarg, R_OK) != 0) {
-                    log_error("%s from 'static-wallpaper' cannot be read. Please check the file permissions.", optarg);
+                if(access(tmp_path, R_OK) != 0) {
+                    log_error("%s from 'static-wallpaper' cannot be read. Please check the file permissions.", tmp_path);
                     exit(1);
                 }
                 /*
-                 * TODO implement this in main function instead
+                 * TODO: implement this in main function instead
                  * imgPath = (char**)malloc(1 * sizeof(char*));
                  * imgPath[0] = (char*)malloc(PATH_MAX * sizeof(char));
                  * strcpy(imgPath[0], optarg);
                  * imgCount++;
                  * usingStaticWallpaper = true;
                  */
-                parameters->hasStaticWallpaper = true;
+                if(strlen(tmp_path) > PATH_MAX - 1) {
+                    log_error("Static wallpaper path too long!");
+                    exit(EXIT_FAILURE);
+                }
+                strncpy(parameters->static_wallpaper, tmp_path, PATH_MAX - 1);
+                parameters->has_static_wallpaper = true;
                 break;
 
             case '?':

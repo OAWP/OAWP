@@ -25,23 +25,32 @@
 
 typedef struct params {
     /*** VALUES ***/
-    char imDirPath[PATH_MAX];       /* Path to images directory */
-    char confPath[PATH_MAX];        /* Path to configuration file to use */
-    double frameTime;                     /* Time between frames */
-    char staticWallpaper[PATH_MAX]; /* Path to static wallpaper */
-    int fitOpt;                           /* The fit option */
+    char im_dir_path[PATH_MAX];       /* Path to images directory */
+    char conf_path[PATH_MAX];         /* Path to configuration file to use */
+    double frame_time;                /* Time between frames */
+    char static_wallpaper[PATH_MAX];  /* Path to static wallpaper */
+    int fit_opt;                      /* The fit option */
     int debug;
 
     /*** BOOLEANS of value existence ***/
-    bool hasImDirPath;              /* If true, this type has a directory value */
-    bool hasConfPath;               /* If true, the configuration file from argument will be used */
-    bool hasFrameTime;              /* If true, this type has a time value */
-    bool hasStaticWallpaper;        /* If true, this type has a StaticWallpaper value */
-    bool hasFitOpt;                 /* If true, this type has a Fit option value */
-    bool hasDebug;
+    bool has_im_dir_path;             /* if true, this type has a directory value */
+    bool has_conf_path;               /* if true, the configuration file from argument will be used */
+    bool has_frame_time;              /* if true, this type has a time value */
+    bool has_static_wallpaper;        /* if true, this type has a staticwallpaper value */
+    bool has_fit_opt;                 /* if true, this type has a fit option value */
+    bool has_debug;
 } params_t;
 
 
-uint8_t argGetOpt(const int argc, const char **argv, params_t *restrict parameters);
+/**
+ * @brief Populate parameters based on argument options.
+ *
+ * @param argc argc from main()
+ * @param argv argv from main()
+ * @param parameters params_t to be populated
+ *
+ * @return 0 if everything is okay.
+ */
+uint8_t arg_get_opt(const int argc, const char **argv, params_t *restrict parameters);
 
 #endif // __ARG_H__

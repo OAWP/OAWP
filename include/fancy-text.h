@@ -23,13 +23,23 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-# ifndef _OAWP_ENABLE_COLORS_
-  #define _OAWP_ENABLE_COLORS_ 1
-  /*
-   * --enable-colors
-   *
-   * When enabled, color sequences will be used
-   */
+/**
+ * @brief Enable or disable color sequences in logging.
+ *
+ * Options: --enable-colors / --disable-colors
+ *
+ * @default --enable-colors
+ *
+ * When enabled, color sequences will be used. Otherwise, no color will be
+ * displayed on the terminal.
+ */
+# ifndef DISABLE_COLORS
+  #define ENABLE_COLORS
+#endif
+
+#ifdef ENABLE_COLORS
+
+  #define LOG_USE_COLOR
 
   /* FOREGROUND */
   #define RST "\033[0m"
@@ -78,22 +88,73 @@
   #define BOLD  "\033[1m"  //bold
   #define UNDL  "\033[4m"  //underline
 
-# endif  /* _OAWP_ENABLE_COLORS_ */
+# else
 
-/* colored status macros */
-#define DEBUG_TEXT_PUTS  KBLU "DEBUG" RST
-#define INFO_TEXT_PUTS   RST "[" KBLU "i" RST "] " RST // [i]
-#define WARN_TEXT_PUTS   RST "[" KYEL "w" RST "] " RST // [w]
-#define ERR_TEXT_PUTS    RST "[" KRED "e" RST "] " RST // [e]
+  /* FOREGROUND */
+  #define RST ""
 
-#define INFO_TEXT_PUTS_CAST(text)  INFO_TEXT_PUTS text
-#define WARN_TEXT_PUTS_CAST(text)  WARN_TEXT_PUTS text
-#define ERR_TEXT_PUTS_CAST(text)   ERR_TEXT_PUTS text
+  /* Normal foreground colors */
+  #define KBLK  "" //black
+  #define KRED  "" //red
+  #define KGRN  "" //green
+  #define KYEL  "" //yellow
+  #define KBLU  "" //blue
+  #define KMAG  "" //magenta
+  #define KCYN  "" //cyan
+  #define KWHT  "" //white
 
-static bool isExecutable(const char *restrict executable);
+  /* Bright foreground colors */
+  #define KBBLK "" //bright black(gray)
+  #define KBRED "" //bright red
+  #define KBGRN "" //bright green
+  #define KBYEL "" //bright yellow
+  #define KBBLU "" //bright blue
+  #define KBMAG "" //bright magenta
+  #define KBCYN "" //bright cyan
+  #define KBWHT "" //bright white
+
+  /* Normal background colors */
+  #define BBLK  "" //black background
+  #define BRED  "" //red background
+  #define BGRN  "" //green background
+  #define BYEL  "" //yellow background
+  #define BBLU  "" //blue background
+  #define BMAG  "" //magenta background
+  #define BCYN  "" //cyan background
+  #define BWHT  "" //white background
+
+  /* Bright background colors */
+  #define BBBLK "" //bright black (gray) background
+  #define BBRED "" //bright red background
+  #define BBGRN "" //bright green background
+  #define BBYEL "" //bright yellow background
+  #define BBBLU "" //bright blue background
+  #define BBMAG "" //bright magenta background
+  #define BBCYN "" //bright cyan background
+  #define BBWHT "" //bright white background
+
+  /* misc */
+  #define BOLD  ""  //bold
+  #define UNDL  ""  //underline
+
+# endif  /* ENABLE_COLORS */
+
+typedef enum {
+  LOGO_OAWP,  /* Standard OAWP */
+#ifdef __APPLE__
+  LOGO_MAWP,  /* Apple macOS */
+#elif _WIN32
+  LOGO_WINAWP, /* Microsoft Windows */
+#else
+  LOGO_XAWP,  /* X11 */
+  LOGO_WAWP,  /* Wayland */
+#endif
+} AwpLogo;
+
+static bool _is_executable(const char *restrict executable);
 
 /** Print the *AWP logo */
-void puts_logo(const uint8_t logo);
+void _puts_logo(const AwpLogo logo);
 
 /** Print the *AWP logo */
 void puts_logo_auto(void);
@@ -103,13 +164,5 @@ void help(void);
 
 /* Print the version of this */
 void version(void);
-
-enum awp_logo {
-  logo_oawp,  /* Standard OAWP */
-  logo_xawp,  /* X11 */
-  logo_wawp,  /* Wayland */
-  logo_mawp,  /* Apple macOS */
-  logo_winawp /* Microsoft Windows */
-};
 
 #endif

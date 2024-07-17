@@ -22,7 +22,7 @@
 
 #include <Imlib2.h>
 
-enum fitOpt {
+typedef enum {
   /* Position flags (mutually exclusive) */
   _FIT_FULLSCREEN   = 1 << 0,
   _FIT_CENTERED     = 1 << 1,
@@ -34,20 +34,20 @@ enum fitOpt {
   /* Fitting flags (mutually exclusive) */
   _FIT_CROPPED   = 1 << 6,
   _FIT_STRETCHED = 1 << 7
-};
+} FitOpt;
 
 /* Mutual exclusion masks */
 const static int POSITION_MASK = _FIT_FULLSCREEN | _FIT_CENTERED | _FIT_TOP_LEFT |
                                  _FIT_BOTTOM_LEFT | _FIT_BOTTOM_RIGHT | _FIT_TOP_RIGHT;
 const static int FIT_MASK = _FIT_CROPPED | _FIT_STRETCHED;
 
-/** Sets fit options while checkig for conflicts */
-void setFitOpts(int *restrict currentOptions, const int newOption);
+/// Sets fit options while checkig for conflicts
+static void set_fit_opts(int *restrict current_options, const int new_option);
 
-/** Transforms strings like "BOTTOM-RIGHT STRETCHED" to an integer */
-int fit_atoe(const char *restrict fitOpt);
+/// Transforms strings like "BOTTOM-RIGHT STRETCHED" to an integer
+int fit_atoe(const char *restrict fit_opt_str);
 
-/** Manipulates frames with Imlib2 */
-void ImFit_fitOpts(Imlib_Image *image[], const int fitOpts);
+/// Manipulates frames with Imlib2
+void Imlib_fit(Imlib_Image *image[], const int fit_opts);
 
 #endif // __PIXMANIP_H__

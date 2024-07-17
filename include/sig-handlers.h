@@ -20,6 +20,13 @@
 #ifndef __SIG_HANDLERS_H__
 #define __SIG_HANDLERS_H__
 
-void termHandler(const int signum);
+
+/**
+ * @brief When receiving a SIGTERM or SIGINT, this function will exit gracefully with
+ * an informative quit message to the user.
+ *
+ * @param signum Signal number (eg. SIGINT [2])
+ */
+void term_handler(const int signum);
 
 #endif // __SIG_HANDLERS_H__

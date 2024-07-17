@@ -23,6 +23,7 @@
  */
 
 #include "log.h"
+#include "fancy-text.h"
 
 #define MAX_CALLBACKS 32
 

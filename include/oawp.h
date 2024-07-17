@@ -21,7 +21,6 @@
 
 #include <stdbool.h>
 #include <Imlib2.h>
-#include "dir-handler.h"
 
 #ifndef _POSIX_C_SOURCE
 # define _POSIX_C_SOURCE 199309L
@@ -50,13 +49,17 @@
 
 /* The fit option OAWP should use by default */
 #ifndef DEFAULT_FIT_OPTION
-# define DEFAULT_FIT_OPTION "fit"
+# define DEFAULT_FIT_OPTION "CENTERED"
 #endif
 
 /* The default OAWP config file */
 #ifndef DEFAULT_CONFIG_FILE_PATH
-# define DEFAULT_CONFIG_FILE_PATH "~/.config/oawp/oawp.conf"
-#endif
+# ifdef _WIN32
+#  define DEFAULT_CONFIG_FILE_PATH "%AppData%\\oawp\\oawp.conf"
+# else
+#  define DEFAULT_CONFIG_FILE_PATH "~/.config/oawp/oawp.conf"
+# endif // _WIN32
+#endif // DEFAULT_CONFIG_FILE_PATH
 
 /* If _DEBUG is true, print debug info.
  * Note that _DEBUG is a variable that may be changed in runtime and DEBUG is a
@@ -70,11 +73,6 @@ typedef struct {
   int width, height;
 } Monitor;
 
-void help(void);
-void version(void);
-
-void freeUsingPath(void);
-void setRootAtoms(Display *restrict display, Monitor *restrict monitor);
-void ImFit(Imlib_Image *image[]);
+void set_root_atoms(Display *restrict display, Monitor *restrict monitor);
 
 #endif
