@@ -230,21 +230,6 @@ uint8_t verify_dir_path(const char path[PATH_MAX]) {
     return 0;
 }
 
-static int compare_fun (const void *restrict p, const void *restrict q) {
-  /* compare_fun() and some code from im_paths_get() from
-   * https://www.linuxquestions.org/questions/programming-9/how-to-list-and-sort-files-in-some-directory-by-the-names-on-linux-win-in-c-4175555160/
-   * by NevemTeve - Thank you NevemTeve
-   */
-
-  const char *l = (const char*)p;
-  const char *r = (const char*)q;
-  int cmp;
-
-  cmp = strcmp(l, r);
-  return cmp;
-}
-
-
 uint8_t im_paths_get(const char str[PATH_MAX], ImPaths *restrict im_paths) {
   /* This function serves for saving the images paths from a
    * choosen directory to a dynamically allocated array of
@@ -315,19 +300,16 @@ uint8_t im_paths_get(const char str[PATH_MAX], ImPaths *restrict im_paths) {
   }
   closedir(d);
 
-  // readdir() dumps mixed files, so qsort will sort alphabetically */
+  // readdir() dumps mixed files, so sort alphabetically */
   im_paths_sort(im_paths);
 
   /* Prints all the selected files */
   log_debug("Selected files:");
   im_paths_index_reset(im_paths); // Reset index
 
-  for(uint64_t i = 1; i < im_paths->image_count; i++) {
+  for(uint64_t i = 1; i <= im_paths->image_count; i++) {
       log_debug("  | File %d: %s", i, im_paths->p_index->im_path);
-      if(! im_paths_next(im_paths)) { // Go to next image
-          log_fatal("Reached end of list before image count");
-          exit(EXIT_FAILURE);
-      }
+      im_paths_next(im_paths);
   }
 
   im_paths_index_reset(im_paths); // Reset index
@@ -338,9 +320,9 @@ uint8_t im_paths_get(const char str[PATH_MAX], ImPaths *restrict im_paths) {
 
 uint8_t im_paths_init(ImPaths *restrict im_paths) {
     im_paths->image_count = 0;
-    im_paths->p_list = NULL;
-    im_paths->p_index = NULL;
-    im_paths->p_end = NULL;
+    im_paths->p_list      = NULL;
+    im_paths->p_index     = NULL;
+    im_paths->p_end       = NULL;
 
     return 0;
 }
@@ -368,8 +350,8 @@ uint8_t im_paths_push(const char *restrict str, ImPaths *restrict im_paths) {
     if (im_paths->p_list == NULL) {
         im_paths->p_list = im_paths->p_index = im_paths->p_end = tmp_char_list;
     } else {
-        tmp_char_list2 = im_paths->p_end;
-        im_paths->p_end = tmp_char_list;
+        tmp_char_list2         = im_paths->p_end;
+        im_paths->p_end        = tmp_char_list;
         tmp_char_list2->p_next = im_paths->p_end;
     }
 
@@ -387,8 +369,86 @@ uint8_t im_paths_next(ImPaths *restrict im_paths) {
         return 0; // If reached end
 }
 
+static struct CharList* _im_paths_get_pos_ptr(struct CharList *restrict char_list, uint64_t pos, uint64_t elements) {
+    if (pos == 0 || pos > elements) {
+        log_error("Ordered position is invalid");
+        exit(EXIT_FAILURE);
+    }
+
+    if (pos == 1)
+        return char_list;
+
+    struct CharList* tmp_char_list = char_list;
+
+    for (uint64_t tmp = 1; tmp < pos; tmp++) {
+        if (tmp_char_list->p_next != NULL) {
+            tmp_char_list = tmp_char_list->p_next;
+        } else {
+            log_fatal("Expected tmp_char_list->p_next not to be NULL");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    return tmp_char_list;
+}
+
+static struct CharList* _im_paths_sorted_merge(struct CharList *a, struct CharList *b) {
+    struct CharList *result = NULL;
+
+    if (a == NULL)
+      return b;
+    if (b == NULL)
+      return a;
+
+    // Pick either a or b
+    if (strcmp(a->im_path, b->im_path) <= 0) {
+        result = a;
+        result->p_next = _im_paths_sorted_merge(a->p_next, b);
+    } else {
+        result = b;
+        result->p_next = _im_paths_sorted_merge(a, b->p_next);
+    }
+    return result;
+}
+
+
+static struct CharList* _im_paths_merge_sort(struct CharList *restrict char_list, uint64_t elements) {
+    // If the list is empty or has only one element, it's already sorted
+    if (elements <= 1) {
+        return char_list;
+    }
+
+    // Find the middle of the list
+    uint64_t middle_index   = elements / 2;
+    struct CharList *middle = _im_paths_get_pos_ptr(char_list, middle_index, elements);
+
+    // Split the list into two
+    struct CharList *left_half  = char_list;
+    struct CharList *right_half = middle->p_next;
+    middle->p_next = NULL; // Split the list by null-terminating the left half
+
+    // Recursively sort each half
+    left_half  = _im_paths_merge_sort(left_half, middle_index);
+    right_half = _im_paths_merge_sort(right_half, elements - middle_index);
+
+    // Merge the sorted halves and return the sorted list
+    return _im_paths_sorted_merge(left_half, right_half);
+}
+
 uint8_t im_paths_sort(ImPaths *restrict im_paths) {
-    //TODO
+    if (im_paths->image_count < 2) { // already sorted
+        return 0;
+    }
+
+    uint64_t elements = im_paths->image_count;
+    struct CharList *sorted_list = _im_paths_merge_sort(im_paths->p_list, elements);
+    im_paths->p_list = sorted_list;
+
+    im_paths_index_reset(im_paths);
+    while(im_paths->p_index != NULL)
+        im_paths->p_index = im_paths->p_index->p_next;
+
+    im_paths->p_end = im_paths->p_index;
 
     return 0;
 }

@@ -74,18 +74,18 @@ uint8_t format_path(char dst[PATH_MAX], const char *restrict src);
  */
 uint8_t verify_dir_path(const char path[PATH_MAX]);
 
-static int compare_fun (const void *restrict p, const void *restrict q);
-
-// DEPRECATED
-//uint8_t getImgCount(const char str[PATH_MAX], uint64_t *restrict img_count);
-
 uint8_t im_paths_get(const char str[PATH_MAX], ImPaths *restrict im_paths);
 
 uint8_t im_paths_init(ImPaths *restrict im_paths);
 uint8_t im_paths_index_reset(ImPaths *restrict im_paths);
 uint8_t im_paths_push(const char *restrict str, ImPaths *restrict im_paths);
 uint8_t im_paths_next(ImPaths *restrict im_paths);
+
+static struct CharList* _im_paths_get_pos_ptr(struct CharList *restrict char_list, uint64_t pos, uint64_t elements);
+static struct CharList* _im_paths_sorted_merge(struct CharList *a, struct CharList *b);
+static struct CharList* _im_paths_merge_sort(struct CharList *restrict char_list, uint64_t elements);
 uint8_t im_paths_sort(ImPaths *restrict im_paths);
+
 uint8_t im_paths_free(ImPaths *restrict im_paths);
 
 #endif // __DIR_CHECKER_H__
