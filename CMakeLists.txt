@@ -43,8 +43,8 @@ include(AddGitHash)
 add_git_hash()
 
 # Set default build type
-#set(default_build_type "Release")
-set(default_build_type "Debug")
+set(default_build_type "Release")
+#set(default_build_type "Debug")
 
 # If default build type
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)

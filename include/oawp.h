@@ -26,15 +26,8 @@
 #   define _POSIX_C_SOURCE 199309L
 #endif
 
-#ifdef DEBUG
-/* If DEBUG was defined somewhere else as false, redefine here */
-#    if DEBUG == false
-/* If you want DEBUG as true, define it only here in A and B, unless you know
- * what you are doing. The values between A and B must be the same! */
-#        define DEBUG false  /* A - MUST be the same as B! */
-#    endif
-#else
-#    define DEBUG false  /* B - MUST be the same as A! */
+#ifndef DEBUG
+#    define DEBUG false
 #endif
 
 /* The default wait time between frame changes */

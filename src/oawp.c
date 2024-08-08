@@ -87,6 +87,8 @@ int main(int argc, char *argv[]) {
     signal(SIGTERM, term_handler);
     signal(SIGINT,  term_handler);
 
+    FILE *log_file[2]; // log_file[0] - init, log_file[1] - params
+
     /* Configure log file */
 #ifdef _WIN32
     {
@@ -94,24 +96,26 @@ int main(int argc, char *argv[]) {
         char tmp_path[PATH_MAX];
 
         format_path(tmp_path, "%localappdata%\\Temp\\oawp-logfile.txt");
-        FILE *log_file = fopen(tmp_path, "a");
+        log_file[0] = fopen(tmp_path, "a");
+        log_file[1] = fopen(tmp_path, "a");
         // NOTE: tmp_path goes out of scope
     }
 #else
-    FILE *log_file = fopen("/tmp/oawp-logfile.txt", "a");
+    log_file[0] = fopen("/tmp/oawp-logfile.txt", "a");
+    log_file[1] = fopen("/tmp/oawp-logfile.txt", "a");
 #endif
-    if (!log_file) {
+    if (! log_file[0] || ! log_file[1]) {
         fprintf(stderr, "Failed to open log file!\n");
         exit(EXIT_FAILURE);
     }
 
     /* Configure logger level */
-    if(DEBUG) {
+    if(! DEBUG) {
         log_set_level(LOG_INFO);
-        log_add_fp(log_file, LOG_INFO);
+        log_add_fp(log_file[0], LOG_INFO);
     } else {
         log_set_level(LOG_DEBUG);
-        log_add_fp(log_file, LOG_DEBUG);
+        log_add_fp(log_file[0], LOG_DEBUG);
     }
 
     // TODO: Free these
@@ -179,10 +183,16 @@ int main(int argc, char *argv[]) {
     // NOTE: [ STOP_READ ]
 
     // NOTE: [ START_MANIP ]
+
+    fclose(log_file[0]);
     if(params_args.debug || params_config.debug) {
         log_set_level(LOG_DEBUG);
+        log_add_fp(log_file[1], LOG_DEBUG);
         log_debug("Enabled debug");
     }
+    else
+        log_add_fp(log_file[1], LOG_INFO);
+
     // NOTE: [ STOP_MANIP ]
 
 
@@ -211,7 +221,10 @@ int main(int argc, char *argv[]) {
         if(p_tmp_path2 != NULL) {
             format_path(tmp_path, p_tmp_path2);
 
+#           ifdef _WIN32
             // TODO Check access in Windows
+#           else
+
             if(access(tmp_path, F_OK) != 0) {
                 log_error("%s from 'static-wallpaper' does not exist.", tmp_path);
                 exit(EXIT_FAILURE);
@@ -221,6 +234,8 @@ int main(int argc, char *argv[]) {
                 log_error("%s from 'static-wallpaper' cannot be read. Please check the file permissions.", tmp_path);
                 exit(EXIT_FAILURE);
             }
+
+#           endif
 
             // TODO: Don't rely on this
             //img_path = (char**)malloc(1 * sizeof(char*));
@@ -415,6 +430,9 @@ int main(int argc, char *argv[]) {
             nanosleep(&timeout, NULL);
         }
     }
+
+    // Close log file
+    fclose(log_file[1]);
 }
 
 
