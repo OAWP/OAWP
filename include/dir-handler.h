@@ -18,24 +18,21 @@
  */
 
 #ifndef __DIR_HANDLER_H__
-# define __DIR_HANDLER_H__
+#define __DIR_HANDLER_H__
 
 #include <stdint.h>
 
-/* Get the maximum path size based of
- * different operating systems. */
+/// Get the maximum path size based of different operating systems
 #ifndef PATH_MAX
-  #ifdef __linux__
-    #include <linux/limits.h>
-  #elif BSD
-    #include <limits.h>
-  #elif __APPLE__
-    #include <limits.h>
-  #elif _WIN32
-    #include <windef.h>
-      #define PATH_MAX MAX_PATH
-  #endif // __linux__
-#endif // PATH_MAX
+#    ifdef _WIN32   // Windows
+#        include <windef.h>
+#        define PATH_MAX MAX_PATH
+#    elif __linux__ // Linux
+#        include <linux/limits.h>
+#    else           // Any *nix
+#        include <limits.h>
+#    endif
+#endif /* PATH_MAX */
 
 
 /// Contains paths for all the images to render

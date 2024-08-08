@@ -30,7 +30,7 @@ typedef struct params {
     double frame_time;                /* Time between frames */
     char static_wallpaper[PATH_MAX];  /* Path to static wallpaper */
     int fit_opt;                      /* The fit option */
-    int debug;
+    int debug;                        /* debug */
 
     /*** BOOLEANS of value existence ***/
     bool has_im_dir_path;             /* if true, this type has a directory value */

@@ -58,65 +58,55 @@ uint8_t arg_get_opt(const int argc, const char **argv, params_t *restrict parame
             /* help */
             case 'h':
                 help();
-                exit(0);
+                exit(EXIT_SUCCESS);
                 break;
 
                 /* time */
             case 't':
-                //snprintf(configTime, sizeof(configTime), "%s", optarg); TODO: remove this?
                 parameters->frame_time = atof(optarg);
+
                 if(parameters->frame_time < MIN_FRAME_TIME) {
                     log_error("Time cannot be less than %lf.", MIN_FRAME_TIME);
-                    exit(1);
+                    exit(EXIT_FAILURE);
                 }
-                //TODO
+
                 parameters->has_frame_time = true;
                 break;
 
                 /* version */
             case 'v':
                 version();
-                exit(0);
+                exit(EXIT_SUCCESS);
                 break;
 
                 /* debug */
             case 'D':
-                _DEBUG = true;
-                log_debug("Enabled debug");
+                parameters->debug = true;
+                parameters->has_debug = true;
                 break;
 
                 /* fit */
             case 'f':
-                log_info("Fit is not implemented yet, skipping ...");
-                /* TODO: implement this fit and remove this break */
-                break;
-                /* part of Fit */
-                //TODO make a function to transform optarg to enums
                 parameters->fit_opt = fit_atoe(optarg);
                 parameters->has_fit_opt = true;
+
+                // TODO
+                log_info("Fit is not implemented yet, skipping ...");
                 break;
 
                 /* directory */
             case 'd':
                 strcpy(parameters->im_dir_path, optarg);
 
-                //TODO: prototype var
-                ImPaths a;
-                im_paths_init(&a);
-                im_paths_get(parameters->im_dir_path, &a);
+                // TODO: Remove this?
+                //ImPaths a;
+                //im_paths_init(&a);
+                //im_paths_get(parameters->im_dir_path, &a);
                 parameters->has_im_dir_path = true;
                 break;
 
                 /* config */
             case 'c':
-                if(access(optarg, F_OK) != 0) {
-                    log_error("%s configuration file does not exist.", optarg);
-                    exit(1);
-                }
-                if(access(optarg, R_OK) != 0) {
-                    log_error("%s configuration file cannot be read. Please check the file permissions.", optarg);
-                    exit(1);
-                }
                 strcpy(parameters->conf_path, optarg);
                 parameters->has_conf_path = true;
                 break;
@@ -130,33 +120,20 @@ uint8_t arg_get_opt(const int argc, const char **argv, params_t *restrict parame
 
                 format_path(tmp_path, optarg);
 
-                if(access(tmp_path, F_OK) != 0) {
-                    log_error("%s from 'static-wallpaper' does not exist.", tmp_path);
-                    exit(1);
-                }
-                if(access(tmp_path, R_OK) != 0) {
-                    log_error("%s from 'static-wallpaper' cannot be read. Please check the file permissions.", tmp_path);
-                    exit(1);
-                }
-                /*
-                 * TODO: implement this in main function instead
-                 * imgPath = (char**)malloc(1 * sizeof(char*));
-                 * imgPath[0] = (char*)malloc(PATH_MAX * sizeof(char));
-                 * strcpy(imgPath[0], optarg);
-                 * imgCount++;
-                 * usingStaticWallpaper = true;
-                 */
                 if(strlen(tmp_path) > PATH_MAX - 1) {
                     log_error("Static wallpaper path too long!");
                     exit(EXIT_FAILURE);
                 }
+
                 strncpy(parameters->static_wallpaper, tmp_path, PATH_MAX - 1);
                 parameters->has_static_wallpaper = true;
                 break;
 
             case '?':
-                /* No need to print and error message because
-                   getopt_long did that already. */
+                /*
+                 * No need to print and error message because getopt_long did
+                 * that already
+                 */
                 exit(EXIT_FAILURE);
                 break;
 

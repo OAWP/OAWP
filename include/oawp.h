@@ -17,60 +17,55 @@
  * along with OAWP. If not, see <http://www.gnu.org/licenses/>.
  */
 #ifndef __OAWP_H__
-# define __OAWP_H__
+#define __OAWP_H__
 
 #include <stdbool.h>
 #include <Imlib2.h>
 
 #ifndef _POSIX_C_SOURCE
-# define _POSIX_C_SOURCE 199309L
+#   define _POSIX_C_SOURCE 199309L
 #endif
 
 #ifdef DEBUG
 /* If DEBUG was defined somewhere else as false, redefine here */
-# if DEBUG == false
+#    if DEBUG == false
 /* If you want DEBUG as true, define it only here in A and B, unless you know
  * what you are doing. The values between A and B must be the same! */
-#  define DEBUG false  /* A - MUST be the same as B! */
-# endif
+#        define DEBUG false  /* A - MUST be the same as B! */
+#    endif
 #else
-# define DEBUG false  /* B - MUST be the same as A! */
+#    define DEBUG false  /* B - MUST be the same as A! */
 #endif
 
 /* The default wait time between frame changes */
 #ifndef DEFAULT_FRAME_TIME
-# define DEFAULT_FRAME_TIME 0.07
+#    define DEFAULT_FRAME_TIME 0.07
 #endif
 
 /* The minimum wait time between frame changes OAWP can accept */
 #ifndef MIN_FRAME_TIME
-# define MIN_FRAME_TIME 0.001
+#    define MIN_FRAME_TIME 0.001
 #endif
 
 /* The fit option OAWP should use by default */
 #ifndef DEFAULT_FIT_OPTION
-# define DEFAULT_FIT_OPTION "CENTERED"
+#    define DEFAULT_FIT_OPTION "CENTERED"
 #endif
 
 /* The default OAWP config file */
 #ifndef DEFAULT_CONFIG_FILE_PATH
-# ifdef _WIN32
-#  define DEFAULT_CONFIG_FILE_PATH "%AppData%\\oawp\\oawp.conf"
-# else
-#  define DEFAULT_CONFIG_FILE_PATH "~/.config/oawp/oawp.conf"
-# endif // _WIN32
+#    ifdef _WIN32
+#        define DEFAULT_CONFIG_FILE_PATH "%AppData%\\oawp\\oawp.conf"
+#    else
+#        define DEFAULT_CONFIG_FILE_PATH "~/.config/oawp/oawp.conf"
+#    endif // _WIN32
 #endif // DEFAULT_CONFIG_FILE_PATH
 
-/* If _DEBUG is true, print debug info.
- * Note that _DEBUG is a variable that may be changed in runtime and DEBUG is a
- * defined macro */
-extern bool _DEBUG;
-
 typedef struct {
-  Window root;
-  Pixmap pixmap;
-  Imlib_Context *render_context;
-  int width, height;
+    Window root;
+    Pixmap pixmap;
+    Imlib_Context *render_context;
+    int width, height;
 } Monitor;
 
 void set_root_atoms(Display *restrict display, Monitor *restrict monitor);

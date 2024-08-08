@@ -23,17 +23,17 @@
 #include <Imlib2.h>
 
 typedef enum {
-  /* Position flags (mutually exclusive) */
-  _FIT_FULLSCREEN   = 1 << 0,
-  _FIT_CENTERED     = 1 << 1,
-  _FIT_TOP_LEFT     = 1 << 2,
-  _FIT_BOTTOM_LEFT  = 1 << 3,
-  _FIT_BOTTOM_RIGHT = 1 << 4,
-  _FIT_TOP_RIGHT    = 1 << 5,
+    /* Position flags (mutually exclusive) */
+    _FIT_FULLSCREEN   = 1 << 0,
+    _FIT_CENTERED     = 1 << 1,
+    _FIT_TOP_LEFT     = 1 << 2,
+    _FIT_BOTTOM_LEFT  = 1 << 3,
+    _FIT_BOTTOM_RIGHT = 1 << 4,
+    _FIT_TOP_RIGHT    = 1 << 5,
 
-  /* Fitting flags (mutually exclusive) */
-  _FIT_CROPPED   = 1 << 6,
-  _FIT_STRETCHED = 1 << 7
+    /* Fitting flags (mutually exclusive) */
+    _FIT_CROPPED   = 1 << 6,
+    _FIT_STRETCHED = 1 << 7
 } FitOpt;
 
 /* Mutual exclusion masks */
