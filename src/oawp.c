@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2024 TheRealOne78 <bajcsielias78@gmail.com>
+ * Copyright (C) 2023-2025 TheRealOne78 <bajcsielias78@gmail.com>
  *
  * This file is part of the OAWP project
  *
@@ -52,35 +52,10 @@
 /* == DEFAULT PARAMETERS == */
 
 /* Basic config/argument variables */
-//char params_config.im_dir_path[PATH_MAX];                  /* path to images directory, from configuration file */ //TODO remove this
-//char params_args.im_dir_path[PATH_MAX];                    /* path to images directory, from user argument (not -c) */ //TODO remove this
-
-char conf_path[PATH_MAX];          /* path to configuration file */
-unsigned img_count;                         /* number of images */
-char **img_path;                            /* pointers to paths of images, from configuration file */ //TODO: replace with linked list
-double frame_time = DEFAULT_FRAME_TIME;     /* time between frames */ /* The time set is the default one */
-
-/*
- * TODO
- * The following commented variables will be replaced by the new params_t type.
- * The commented variables are deprecated and will be removed as soon as
- * everything was fully implemented
- */
-
-//bool isArgConf = false;                    /* If true, the configuration file from argument will be used */ //replaced with params.hasConf
-
-//bool hasArgTime = false;                   /* If true, time from user argument will be used */
-//bool params_args.has_im_dir_path = false;                    /* If true, the directory will be used from user argument */
-
-//TODO:DEPRECATED: deprecate this
-bool using_static_wallpaper = false;         /* If true, OAWP will run only once to set a static wallpaper */
-//bool hasArgStaticWallpaper = false;        /* If true, it will be used the Static Wallpaper from user argument */
-
-//bool params_args.has_fit_opt = false;                    /* If true, the fit option from user argument will be used - Order 0 */
-//bool hasConfFit = false;                   /* If true, the fit option from configuration file will be used - Order 1 */
-//char defaultFitOpt[] = DEFAULT_FIT_OPTION; /* Default Fit Option - Order 2 */ //TODO: use enums
-//char *fitOpt;                              /* The final fit option */
-//
+char conf_path[PATH_MAX];               /* path to configuration file */
+unsigned img_count;                     /* number of images */
+char **img_path;                        /* pointers to paths of images, from configuration file */ //TODO: replace with linked list
+double frame_time = DEFAULT_FRAME_TIME; /* time between frames */ /* The time set is the default one */
 
 int main(int argc, char *argv[]) {
     /* Set up a handler for the SIGTERM and SIGINT signal */
@@ -161,109 +136,86 @@ int main(int argc, char *argv[]) {
      * check/manipulate opts/config parameters.
      *
      * Opts always have a higher priority than configuration files.
-     *
-     * For clarity, reading is noted as [ START/END_READ ] and manipulation is
-     * noted with [ START/END_MANIP ], with a NOTE: sequence at the begining to
-     * make it more clear for some Emacs users.
      */
 
-    // NOTE: [ START_READ ]
     if(config_lookup_bool(&cfg, "debug", &params_config.debug)) {
         params_config.has_debug = true;
         params_config.debug = params_config.debug;
-    } else {
+    }
+    else {
         params_config.has_debug = false;
         params_config.debug = false;
         log_error("No 'debug' setting in configuration file.");
     }
-    // NOTE: [ STOP_READ ]
 
-    // NOTE: [ START_MANIP ]
     if(params_args.debug || params_config.debug) {
         log_set_level(LOG_DEBUG);
         log_debug("Enabled debug");
     }
-    // NOTE: [ STOP_MANIP ]
-
 
     // TODO
-    // NOTE: [ START_READ ]
-    if(! params_args.has_static_wallpaper &&
-       config_lookup_string(&cfg, "static-wallpaper", &tmp_cfg_str)) {
+    if(!params_args.has_static_wallpaper &&
+       config_lookup_string(&cfg, "static-wallpaper", &tmp_cfg_str))
+    {
         strcpy(params_config.static_wallpaper, tmp_cfg_str);
         params_config.has_static_wallpaper = true;
     }
-    // NOTE: [ STOP_READ ]
 
-    // NOTE: [ START_MANIP ]
+
+    // Check if static wallpaper is valid
     {
-        // NOTE: Scope for tmp_path, tmp_path2
+        // NOTE: Scope for tmp_path
         char tmp_path[PATH_MAX];
-        char* p_tmp_path2;
 
         if(params_args.has_static_wallpaper)
-            p_tmp_path2 = params_args.static_wallpaper;
+            format_path(tmp_path, params_args.static_wallpaper);
         else if(params_config.has_static_wallpaper)
-            p_tmp_path2 = params_config.static_wallpaper;
-        else
-            p_tmp_path2 = NULL;
+            format_path(tmp_path, params_config.static_wallpaper);
 
-        if(p_tmp_path2 != NULL) {
-            format_path(tmp_path, p_tmp_path2);
-
-            // TODO Check access in Windows
-            if(access(tmp_path, F_OK) != 0) {
-                log_error("%s from 'static-wallpaper' does not exist.", tmp_path);
-                exit(EXIT_FAILURE);
-            }
-
-            if(access(tmp_path, R_OK) != 0) {
-                log_error("%s from 'static-wallpaper' cannot be read. Please check the file permissions.", tmp_path);
-                exit(EXIT_FAILURE);
-            }
-
-            // TODO: Don't rely on this
-            //img_path = (char**)malloc(1 * sizeof(char*));
-            //img_path[0] = (char*)malloc(PATH_MAX * sizeof(char));
-            //strcpy(img_path[0], params_config.static_wallpaper);
-            //img_count++;
+        // TODO Check access in Windows
+        if(access(tmp_path, F_OK) != 0) {
+            log_error("%s from 'static-wallpaper' does not exist.", tmp_path);
+            exit(EXIT_FAILURE);
         }
+
+        if(access(tmp_path, R_OK) != 0) {
+            log_error("%s from 'static-wallpaper' cannot be read. Please check the file permissions.", tmp_path);
+            exit(EXIT_FAILURE);
+        }
+
+        // TODO: Don't rely on this
+        //img_path = (char**)malloc(1 * sizeof(char*));
+        //img_path[0] = (char*)malloc(PATH_MAX * sizeof(char));
+        //strcpy(img_path[0], params_config.static_wallpaper);
+        //img_count++;
+
         // NOTE: tmp_path goes out of scope
     }
 
 
-    // NOTE: [ STOP_MANIP ]
-
-
     // TODO
-    // NOTE: [ START_READ ]
-    if(params_args.has_im_dir_path && !using_static_wallpaper) {
+    if(params_args.has_im_dir_path && !params_args.has_static_wallpaper)
         im_paths_get(params_args.im_dir_path, im_paths_arg);
-    }
     else if(!params_args.has_im_dir_path &&
             config_lookup_string(&cfg, "path", &tmp_cfg_str) &&
-            !using_static_wallpaper) {
+            !params_config.has_static_wallpaper)
+    {
         strcpy(params_config.im_dir_path, tmp_cfg_str);
-
-        im_paths_get(params_args.im_dir_path, im_paths_arg);
+        im_paths_get(params_config.im_dir_path, im_paths_conf);
         //getImgCount(params_config.im_dir_path);   //TODO: Do that somewhere else
         //im_paths_get(params_config.im_dir_path);  //TODO: Do that somewhere else
     }
-    // NOTE: [ STOP_READ ]
-
-
-    // NOTE: [ START_MANIP ]
-    else if(! using_static_wallpaper) {
+    else if(!(params_args.has_static_wallpaper ||
+              params_config.has_static_wallpaper)) {
         log_error("No 'path' setting in configuration file.");
         exit(EXIT_FAILURE);
     }
 
 
     // TODO
-    // NOTE: [ START_READ ]
     if(! params_args.has_frame_time &&
        config_lookup_float(&cfg, "time", &params_config.frame_time) &&
-       !using_static_wallpaper) {
+       !(params_args.has_static_wallpaper && params_config.has_static_wallpaper)) {
         if(params_config.frame_time < MIN_FRAME_TIME) {
             log_error("Time cannot be less than %lf.", MIN_FRAME_TIME);
             exit(EXIT_FAILURE);
@@ -272,30 +224,20 @@ int main(int argc, char *argv[]) {
         log_debug("frame_time: %lf", frame_time);
         params_config.has_frame_time = true;
     }
-    // NOTE: [ STOP_READ ]
-   
-
-    // NOTE: [ START_MANIP ]
-    else if(! using_static_wallpaper) {
+    else if(!(params_args.has_static_wallpaper && params_config.has_static_wallpaper)) {
         params_config.has_frame_time = false;
         log_warn("No 'time' setting in configuration file. Using default '0.07' seconds as time parameter.");
     }
 
 
     // TODO
-    // NOTE: [ START_READ ]
     if(config_lookup_string(&cfg, "fit", &tmp_cfg_str) &&
-       !params_args.has_fit_opt &&
-       !using_static_wallpaper) {
-        params_config.fit_opt = fit_atoe(tmp_cfg_str);
+       !params_args.has_fit_opt) {
+        params_config.fit_opt     = fit_atoe(tmp_cfg_str);
         params_config.has_fit_opt = true;
     }
-    // NOTE: [ STOP_READ ]
-
-    // NOTE: [ START_MANIP ]
     else
         params_config.has_fit_opt = false;
-    // NOTE: [ STOP_MANIP ]
 
     // Free cfg
     config_destroy(&cfg);
@@ -310,15 +252,21 @@ int main(int argc, char *argv[]) {
     log_debug("Loading images ...");
 
     Imlib_Image images[img_count];
-    if(!using_static_wallpaper) {
+    if(params_args.has_static_wallpaper) {
+        images[0] = imlib_load_image(params_args.static_wallpaper);
+        log_debug("Imlib loaded %s", params_config.static_wallpaper);
+        img_count = 1;
+    }
+    else if(params_config.has_static_wallpaper) {
+        images[0] = imlib_load_image(params_config.static_wallpaper);
+        log_debug("Imlib loaded %s", params_config.static_wallpaper);
+        img_count = 1;
+    }
+    else {
         for(int tmp = 0; tmp < img_count; tmp++) {
             images[tmp] = imlib_load_image(img_path[tmp]);
             log_debug("Imlib loaded %s", img_path[tmp]);
         }
-    } else {
-        images[0] = imlib_load_image((img_path)[0]);
-
-        log_debug("Imlib loaded %s", (img_path)[0]);
     }
     // TODO: free im_paths
     //freeUsingPath();
@@ -347,7 +295,7 @@ int main(int argc, char *argv[]) {
         const int width  = DisplayWidth(display, current_screen);
         const int height = DisplayHeight(display, current_screen);
         const int depth  = DefaultDepth(display, current_screen);
-        Visual *vis      = DefaultVisual(display, current_screen);
+        Visual    *vis   = DefaultVisual(display, current_screen);
         const int cm     = DefaultColormap(display, current_screen);
 
         log_debug("Screen %d: width: %d, height: %d, depth: %d",
@@ -361,6 +309,7 @@ int main(int argc, char *argv[]) {
         monitors[current_screen].root           = root;
         monitors[current_screen].pixmap         = pixmap;
         monitors[current_screen].render_context = imlib_context_new();
+
         imlib_context_push(monitors[current_screen].render_context);
         imlib_context_set_display(display);
         imlib_context_set_visual(vis);
@@ -407,7 +356,7 @@ int main(int argc, char *argv[]) {
                 imlib_context_pop();
             }
 
-            if(using_static_wallpaper) {
+            if((params_args.has_static_wallpaper || params_config.has_static_wallpaper)) {
                 log_debug("Using static wallpaper detected, exiting ...");
                 exit(EXIT_SUCCESS);
             }

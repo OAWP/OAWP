@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2024 TheRealOne78 <bajcsielias78@gmail.com>
+ * Copyright (C) 2023-2025 TheRealOne78 <bajcsielias78@gmail.com>
  * This file is part of the OAWP project
  *
  * OAWP is free software: you can redistribute it and/or modify
@@ -234,7 +234,7 @@ uint8_t im_paths_get(const char str[PATH_MAX], ImPaths *restrict im_paths) {
   /* This function serves for saving the images paths from a
    * choosen directory to a dynamically allocated array of
    * pointers, pointers pointing to the string of path
-   * I choosed this way because a normal initialized array
+   * I chose this way because a normal initialized array
    * would use much more memory, Imlib uses a lot of memory
    * anyway.
    *
